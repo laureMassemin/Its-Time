@@ -1,0 +1,65 @@
+https://makeup-api.herokuapp.com/
+
+Home /
+Quelques produits affichés
+Requête
+/products.json
+
+Produits /products
+Liste de tous les produits
+Filtres simples :
+    type (lipstick, mascara…)
+    marque
+    tag (vegan, cruelty free…)
+Requêtes possibles
+    /products.json
+    /products.json?product_type=lipstick
+    /products.json?brand=maybelline
+    /products.json?product_tags=vegan
+    /products.json?brand=covergirl&product_type=lipstick
+
+Détail produit /products/:id
+Image
+Nom
+Marque
+Prix
+Bouton “Ajouter au panier”
+Requête
+/products.json
+→ tu récupères tout et tu trouves le bon produit avec l’id.
+
+Catégories /categories
+Liste des types :
+    lipstick
+    eyeshadow
+    foundation
+    mascara
+    nail polish
+Quand tu cliques → redirection vers /products?product_type=lipstick
+
+Marques /brands
+Liste des marques (maybelline, dior, nyx…)
+Clique → /products?brand=maybelline
+
+Panier /cart
+Produits ajoutés
+Total
+Pas de paiement, juste du stockage avec Pinia.
+
+Composants simples
+
+ProductCard
+ProductList
+Filters
+Navbar
+CartItem
+
+Pinia (simple)
+Store produits
+    products
+    brands
+    productTypes
+
+Store panier
+    cart
+    totalPrice
