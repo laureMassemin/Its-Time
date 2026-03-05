@@ -1,5 +1,5 @@
 <template>
-    <div class="product-card">
+    <RouterLink :to="`/produit/${data.id}`" class="product-card">
         <div class="image-container">
             <img :src="data.api_featured_image" @error="$emit('image-error')" alt="Product">
         </div>
@@ -8,11 +8,12 @@
             <div class="name">{{ data.name }}</div>
             <div class="price">{{ data.price }} {{ data.price_sign }}</div>
         </div>
-    </div>
+    </RouterLink>
 
 </template>
 
 <script setup>
+import { RouterLink } from 'vue-router';
 
     const props = defineProps({
         data: JSON
@@ -29,6 +30,8 @@
     transition: transform 0.2s;
     cursor: pointer;
     font-family: 'Montserrat', sans-serif;
+    text-decoration: none;
+    display: block;
 }
 
 .product-card:hover {

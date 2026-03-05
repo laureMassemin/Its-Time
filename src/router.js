@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import ProductList from './Components/ProductList.vue';
+import ProductDetails from './views/ProductDetails.vue';
 
 const routes = [
     {
@@ -27,6 +28,11 @@ const routes = [
             filterKey: 'product_type',
             filterValue: route.params.type
         })
+    },
+    {
+        path: '/produit/:id',
+        name: 'ProductDetails',
+        component: ProductDetails
     }
 ];
 
