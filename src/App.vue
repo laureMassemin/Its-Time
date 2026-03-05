@@ -1,10 +1,10 @@
 <script setup>
-import ProductList from './Components/ProductList.vue';
-
+import Navbar from './Components/Navbar.vue';
 </script>
 
 <template>
-  <ProductList title="Tout nos produits"></ProductList>
+  <Navbar></Navbar>
+  <RouterView></RouterView>
 </template>
 
 <style scoped></style>

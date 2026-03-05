@@ -5,27 +5,39 @@
             <div class="title">{{ props.title }}</div>
         </div>
 
-        <div class="content">
+        <div v-if="loading">
+            <div v-if="loading" class="loading">Chargement des produits...</div>
+            <div v-else-if="error" class="error">{{ error }}</div>
+        </div>
+        <div v-else class="content">
             <div class="filters">
-                <select 
-                    v-for="filter in filterConfigs" 
-                    :key="filter.key"
-                    v-model="selectedFilters[filter.key]">
-                    <option value="">{{ filter.allLabel }}</option>
-                    <option 
-                        v-for="option in getAvailableOptions(filter.key)" 
-                        :key="option" 
-                        :value="option">
-                        {{ option }}
-                    </option>
-                </select>
+                <div v-for="filter in filterConfigs" :key="filter.key" class="filter-section">
+                    <div class="filter-title" @click="toggleFilter(filter.key)">
+                        <span>{{ filter.allLabel }}</span>
+                        <span class="toggle-icon">{{ openFilters[filter.key] ? '−' : '+' }}</span>
+                    </div>
+                    <div class="filter-options" v-show="openFilters[filter.key]">
+                        <label 
+                            v-for="option in getAvailableOptions(filter.key)" 
+                            :key="option" 
+                            class="filter-option">
+                            <input 
+                                type="checkbox" 
+                                :value="option"
+                                v-model="selectedFilters[filter.key]">
+                            <span>{{ option }}</span>
+                        </label>
+                    </div>
+                </div>
                 <button class="reset-btn" @click="resetFilters">Réinitialiser les filtres</button>
             </div>
 
-
             <div class="product-container">
                 <div class="products-grid">
-                    <div v-for="product in paginatedProducts" :key="product.id">
+                    <div v-if="paginatedProducts.length === 0">
+                        <p class="no-results">Aucun produit trouvé avec les filtres sélectionnés.</p>
+                    </div>
+                    <div v-else v-for="product in paginatedProducts" :key="product.id">
                         <ProductCard :data="product" @image-error="removeProduct(product)"/>
                     </div>
                 </div>
@@ -38,11 +50,7 @@
             </div>
             
         </div>
-
-        
     </div>
-
-
 </template>
 
 <script setup>
@@ -52,12 +60,13 @@ import ProductCard from './ProductCard.vue';
 
 const props = defineProps({
     title: String,
-    description: String
+    description: String,
+    filterKey: String,
+    filterValue: String
 });
 
 const filterConfigs = [
     { key: 'brand', allLabel: 'Toutes les marques' },
-    { key: 'category', allLabel: 'Toutes les catégories' },
     { key: 'product_type', allLabel: 'Tous les types' },
     { key: 'tag_list', allLabel: 'Tous les tags', isArray: true }
 ];
@@ -65,16 +74,42 @@ const filterConfigs = [
 const products = ref([]);
 const currentPage = ref(1);
 const itemsPerPage = 30;
+const loading = ref(false);
+const error = ref(null);
+
 
 const selectedFilters = reactive(
-    Object.fromEntries(filterConfigs.map(f => [f.key, '']))
+    Object.fromEntries(filterConfigs.map(f => [f.key, []]))
+);
+
+const openFilters = reactive(
+    Object.fromEntries(filterConfigs.map(f => [f.key, false]))
 );
 
 const allFilterOptions = ref({});
 
+const toggleFilter = (key) => {
+    openFilters[key] = !openFilters[key];
+};
+
 const getProducts = async () => {
+    loading.value = true;
     try{
-        const response = await api.get('/api/v1/products.json');
+        // Construire les paramètres de l'API
+        const params = {};
+        
+        // Si on a un filtre depuis le router
+        if (props.filterKey && props.filterValue) {
+            if (props.filterKey === 'brand') {
+                params.brand = props.filterValue;
+            } else if (props.filterKey === 'product_type') {
+                params.product_type = props.filterValue;
+            } else if (props.filterKey === 'tag_list') {
+                params.product_tags = props.filterValue;
+            }
+        }
+        
+        const response = await api.get('/api/v1/products.json', { params });
         const data = Array.isArray(response.data) ? response.data : response.data.products || [];
         products.value = data;
         
@@ -91,8 +126,11 @@ const getProducts = async () => {
                 allFilterOptions.value[filter.key] = [...new Set(options)];
             }
         });
+        loading.value = false;
     } catch (error){
         console.error('Erreur lors de la récupération des produits : ', error);
+        loading.value = false;
+        error.value = 'Erreur lors de la récupération des produits';
     }
 }
 
@@ -101,14 +139,14 @@ const getAvailableOptions = (filterKey) => {
     let tempFiltered = products.value;
     
     Object.keys(selectedFilters).forEach(key => {
-        if (key !== filterKey && selectedFilters[key]) {
+        if (key !== filterKey && selectedFilters[key].length > 0) {
             const keyConfig = filterConfigs.find(f => f.key === key);
             if (keyConfig?.isArray) {
                 tempFiltered = tempFiltered.filter(p => 
-                    Array.isArray(p[key]) && p[key].includes(selectedFilters[key])
+                    Array.isArray(p[key]) && p[key].some(val => selectedFilters[key].includes(val))
                 );
             } else {
-                tempFiltered = tempFiltered.filter(p => p[key] === selectedFilters[key]);
+                tempFiltered = tempFiltered.filter(p => selectedFilters[key].includes(p[key]));
             }
         }
     });
@@ -132,22 +170,31 @@ const removeProduct = (product) => {
 
 const resetFilters = () => {
     Object.keys(selectedFilters).forEach(key => {
-        selectedFilters[key] = '';
+        selectedFilters[key] = [];
     });
 }
 
 const filteredProducts = computed(() => {
     let filtered = products.value;
     
+    // Filtrer les produits sans prix valide
+    filtered = filtered.filter(product => {
+        const price = parseFloat(product.price);
+        return product.price && !isNaN(price) && price > 0;
+    });
+    
+    // Note: Le filtre du router est déjà appliqué côté API
+    // On applique seulement les filtres de la sidebar ici
+    
     Object.keys(selectedFilters).forEach(key => {
-        if (selectedFilters[key]) {
+        if (selectedFilters[key].length > 0) {
             const filterConfig = filterConfigs.find(f => f.key === key);
             if (filterConfig?.isArray) {
                 filtered = filtered.filter(product => 
-                    Array.isArray(product[key]) && product[key].includes(selectedFilters[key])
+                    Array.isArray(product[key]) && product[key].some(val => selectedFilters[key].includes(val))
                 );
             } else {
-                filtered = filtered.filter(product => product[key] === selectedFilters[key]);
+                filtered = filtered.filter(product => selectedFilters[key].includes(product[key]));
             }
         }
     });
@@ -181,6 +228,12 @@ watch(() => Object.values(selectedFilters), () => {
     currentPage.value = 1;
 });
 
+// Recharger les produits quand la route change
+watch(() => [props.filterKey, props.filterValue], () => {
+    getProducts();
+    currentPage.value = 1;
+}, { immediate: false });
+
 onMounted(() => {
     getProducts();
 });
@@ -196,6 +249,7 @@ onMounted(() => {
     display: flex;
     flex-direction: column;
     gap: 30px;
+    font-family: 'Montserrat', sans-serif;
 }
 
 .presentation{
@@ -234,55 +288,117 @@ onMounted(() => {
     gap: 15px;
     position: sticky;
     top: 20px;
+    max-height: calc(100vh - 60px);
+    overflow-y: auto;
+    padding-right: 8px;
 }
 
-.filters select{
-    padding: 12px 16px;
-    font-size: 0.95rem;
-    border: 2px solid #e0e0e0;
-    border-radius: 8px;
-    background-color: white;
+.filters::-webkit-scrollbar {
+    width: 6px;
+}
+
+.filters::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.filters::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 3px;
+}
+
+.filters::-webkit-scrollbar-thumb:hover {
+    background: #999;
+}
+
+.filter-section {
+    background: transparent;
+}
+
+.filter-title {
+    padding: 8px 0;
+    font-size: 0.85rem;
+    font-weight: 600;
     color: #333;
+    background: transparent;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     cursor: pointer;
-    transition: all 0.3s ease;
-    font-family: inherit;
-    outline: none;
+    user-select: none;
 }
 
-.filters select:hover{
-    border-color: #2c3e50;
+.filter-title:hover {
+    color: #000;
 }
 
-.filters select:focus{
-    border-color: #3498db;
-    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+.toggle-icon {
+    font-size: 1.2rem;
+    font-weight: 400;
+    color: #666;
 }
 
-.filters select option{
-    padding: 10px;
+.filter-options {
+    max-height: 120px;
+    overflow-y: auto;
+    padding: 4px 0;
+}
+
+.filter-options::-webkit-scrollbar {
+    width: 4px;
+}
+
+.filter-options::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.filter-options::-webkit-scrollbar-thumb {
+    background: #ddd;
+    border-radius: 2px;
+}
+
+.filter-options::-webkit-scrollbar-thumb:hover {
+    background: #bbb;
+}
+
+.filter-option {
+    display: flex;
+    align-items: center;
+    padding: 4px 8px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.filter-option:hover {
+    background-color: #f5f5f5;
+}
+
+.filter-option input[type="checkbox"] {
+    margin-right: 8px;
+    cursor: pointer;
+}
+
+.filter-option span {
+    font-size: 0.8rem;
+    color: #555;
+    user-select: none;
 }
 
 .reset-btn {
-    padding: 12px 16px;
-    background-color: #666;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 0.95rem;
-    font-weight: 600;
+    padding: 8px 16px;
+    background-color: transparent;
+    color: #333;
+    border: 1px solid #ddd;
+    border-radius: 0;
+    font-size: 0.85rem;
+    font-weight: 400;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
     margin-top: 10px;
 }
 
 .reset-btn:hover {
-    background-color: #c0392b;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(231, 76, 60, 0.3);
-}
-
-.reset-btn:active {
-    transform: translateY(0);
+    border-color: #999;
+    color: #000;
 }
 
 .product-container{
@@ -291,10 +407,15 @@ onMounted(() => {
 }
 
 .products-grid{
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: 24px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
     margin-bottom: 40px;
+}
+
+.products-grid > div {
+    flex: 0 0 calc(25% - 7px);
+    min-width: 180px;
 }
 
 .pagination {
@@ -307,38 +428,32 @@ onMounted(() => {
 }
 
 .pagination button {
-    padding: 12px 24px;
-    background-color: #2c3e50;
-    color: white;
-    border: none;
-    border-radius: 8px;
+    padding: 8px 16px;
+    background-color: transparent;
+    color: #333;
+    border: 1px solid #ddd;
+    border-radius: 0;
     cursor: pointer;
-    font-weight: 600;
-    font-size: 0.95rem;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    font-weight: 400;
+    font-size: 0.85rem;
+    transition: border-color 0.2s ease;
 }
 
 .pagination button:hover:not(:disabled) {
-    background-color: #34495e;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-}
-
-.pagination button:active:not(:disabled) {
-    transform: translateY(0);
+    border-color: #999;
+    color: #000;
 }
 
 .pagination button:disabled {
     opacity: 0.4;
     cursor: not-allowed;
-    background-color: #95a5a6;
+    color: #999;
 }
 
 .page-info {
-    font-weight: 600;
-    color: #2c3e50;
-    font-size: 1rem;
+    font-weight: 400;
+    color: #666;
+    font-size: 0.85rem;
     min-width: 140px;
     text-align: center;
 }

@@ -24,24 +24,22 @@
 
 <style scoped>
 .product-card {
-    border: 1px solid #ddd;
-    border-radius: 8px;
     overflow: hidden;
     background: white;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    transition: transform 0.2s, box-shadow 0.2s;
+    transition: transform 0.2s;
+    cursor: pointer;
+    font-family: 'Montserrat', sans-serif;
 }
 
 .product-card:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    transform: scale(1.02);
 }
 
 .image-container {
-    width: 300px;
-    height: 300px;
+    width: 100%;
+    aspect-ratio: 1;
     overflow: hidden;
-    background: #f5f5f5;
+    background: #fafafa;
 }
 
 .image-container img {
@@ -51,30 +49,38 @@
 }
 
 .info {
-    padding: 12px;
+    padding: 8px 4px;
     display: flex;
     flex-direction: column;
-    gap: 3px;
+    gap: 2px;
 }
 
 .brand {
-    font-size: 0.85rem;
-    color: #888;
+    font-size: 0.75rem;
+    color: #999;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    font-weight: 500;
 }
 
 .name {
-    font-size: 1rem;
-    font-weight: 600;
+    font-size: 0.9rem;
+    font-weight: 500;
     color: #333;
     line-height: 1.3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
 }
 
 .price {
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: 700;
-    color: #e74c3c;
+    color: #000;
+    margin-top: 4px;
 }
 </style>
 
