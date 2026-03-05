@@ -1,7 +1,7 @@
 <template>
     <div class="product-details-container">
-        <div v-if="loading" class="loading">Chargement...</div>
-        <div v-else-if="error" class="error">{{ error }}</div>
+        <div v-if="productStore.loading" class="loading">Chargement...</div>
+        <div v-else-if="productStore.error" class="error">{{ productStore.error }}</div>
         <div v-else-if="product" class="product-details">
             <div class="product-image">
                 <img :src="product.api_featured_image" :alt="product.name" @error="handleImageError">
@@ -102,37 +102,27 @@ import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { useCartStore } from '../stores/cart';
 import { useFavoritesStore } from '../stores/favorites';
-import api from '../../fichier';
+import { useProductStore } from '../stores/products';
 
 const route = useRoute();
 const cartStore = useCartStore();
 const favoritesStore = useFavoritesStore();
+const productStore = useProductStore();
 
 const product = ref(null);
 const selectedColor = ref(null);
 const addedMessage = ref(false);
 const favoriteMessage = ref(false);
-const loading = ref(true);
-const error = ref(null);
 
 const getProduct = async () => {
-    loading.value = true;
-    try {
-        const response = await api.get('/api/v1/products.json');
-        const data = Array.isArray(response.data) ? response.data : response.data.products || [];
-        
-        const productId = parseInt(route.params.id);
-        product.value = data.find(p => p.id === productId);
-        
-        if (!product.value) {
-            error.value = 'Produit non trouvé';
-        }
-        
-        loading.value = false;
-    } catch (err) {
-        console.error('Erreur:', err);
-        error.value = 'Erreur lors du chargement du produit';
-        loading.value = false;
+    // Assurer que les produits sont chargés
+    await productStore.loadProducts();
+    
+    const productId = parseInt(route.params.id);
+    product.value = productStore.getProductById(productId);
+    
+    if (!product.value) {
+        console.error('Produit non trouvé');
     }
 };
 

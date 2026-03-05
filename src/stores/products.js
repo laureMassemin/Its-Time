@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia';
-import { ref, computed } from 'vue';
+import { ref } from 'vue';
 import api from '../../fichier';
 
 export const useProductStore = defineStore('products', () => {
@@ -23,11 +23,32 @@ export const useProductStore = defineStore('products', () => {
         error.value = null;
         try {
             const response = await api.get('/api/v1/products.json');
-            const data = Array.isArray(response.data) ? response.data : response.data.products || [];
+            let data = response.data;
+            
+            // Gérer différents formats de réponse
+            if (typeof data === 'string') {
+                data = JSON.parse(data);
+            }
+            
+            if (Array.isArray(data)) {
+                data = data;
+            } else if (data && data.products && Array.isArray(data.products)) {
+                data = data.products;
+            } else if (data && typeof data === 'object') {
+                // Chercher un tableau dans l'objet
+                const arrays = Object.values(data).filter(v => Array.isArray(v));
+                if (arrays.length > 0) {
+                    data = arrays[0];
+                } else {
+                    data = [];
+                }
+            } else {
+                data = [];
+            }
 
             const validProducts = data.filter(product => {
                 const price = parseFloat(product.price);
-                return product.price && !isNaN(price) && price > 0;
+                return product && product.price && !isNaN(price) && price > 0;
             });
 
             products.value = validProducts;
@@ -38,8 +59,8 @@ export const useProductStore = defineStore('products', () => {
             
             lastFetchTime.value = Date.now();
         } catch (err) {
-            error.value = 'Erreur lors du chargement des produits';
-            console.error(err);
+            error.value = 'Erreur lors du chargement des produits: ' + err.message;
+            console.error('Erreur produits:', err);
         } finally {
             loading.value = false;
         }

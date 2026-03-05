@@ -5,9 +5,9 @@
             <div class="title">{{ props.title }}</div>
         </div>
 
-        <div v-if="loading">
-            <div v-if="loading" class="loading">Chargement des produits...</div>
-            <div v-else-if="error" class="error">{{ error }}</div>
+        <div v-if="productStore.loading">
+            <div v-if="productStore.loading" class="loading">Chargement des produits...</div>
+            <div v-else-if="productStore.error" class="error">{{ productStore.error }}</div>
         </div>
         <div v-else class="content">
             <div class="filters">
@@ -55,8 +55,10 @@
 
 <script setup>
 import { ref, onMounted, computed, watch, reactive } from 'vue';
-import api from '../../fichier';
+import { useProductStore } from '../stores/products';
 import ProductCard from './ProductCard.vue';
+
+const productStore = useProductStore();
 
 const props = defineProps({
     title: String,
@@ -71,12 +73,8 @@ const filterConfigs = [
     { key: 'tag_list', allLabel: 'Tous les tags', isArray: true }
 ];
 
-const products = ref([]);
 const currentPage = ref(1);
 const itemsPerPage = 30;
-const loading = ref(false);
-const error = ref(null);
-
 
 const selectedFilters = reactive(
     Object.fromEntries(filterConfigs.map(f => [f.key, []]))
@@ -92,47 +90,42 @@ const toggleFilter = (key) => {
     openFilters[key] = !openFilters[key];
 };
 
-const getProducts = async () => {
-    loading.value = true;
-    try{
-        // Construire les paramètres de l'API
-        const params = {};
-        
-        // Si on a un filtre depuis le router
-        if (props.filterKey && props.filterValue) {
+// Utiliser les produits du store
+const products = computed(() => {
+    // Si un filtre est appliqué, filtrer les produits
+    if (props.filterKey && props.filterValue) {
+        return productStore.products.filter(product => {
             if (props.filterKey === 'brand') {
-                params.brand = props.filterValue;
+                return product.brand === props.filterValue;
             } else if (props.filterKey === 'product_type') {
-                params.product_type = props.filterValue;
-            } else if (props.filterKey === 'tag_list') {
-                params.product_tags = props.filterValue;
+                return product.product_type === props.filterValue;
             }
-        }
-        
-        const response = await api.get('/api/v1/products.json', { params });
-        const data = Array.isArray(response.data) ? response.data : response.data.products || [];
-        products.value = data;
-        
+            return true;
+        });
+    }
+    return productStore.products;
+});
+
+// Réactions pour recalculer les filtres quand les produits changent
+watch(
+    () => productStore.products,
+    () => {
         filterConfigs.forEach(filter => {
             if (filter.isArray) {
-                const allTags = data
+                const allTags = productStore.products
                     .flatMap(product => product[filter.key] || [])
                     .filter(value => value && String(value).trim() !== "");
                 allFilterOptions.value[filter.key] = [...new Set(allTags)];
             } else {
-                const options = data
+                const options = productStore.products
                     .map(product => product[filter.key])
                     .filter(value => value && String(value).trim() !== "");
                 allFilterOptions.value[filter.key] = [...new Set(options)];
             }
         });
-        loading.value = false;
-    } catch (error){
-        console.error('Erreur lors de la récupération des produits : ', error);
-        loading.value = false;
-        error.value = 'Erreur lors de la récupération des produits';
-    }
-}
+    },
+    { immediate: true }
+);
 
 const getAvailableOptions = (filterKey) => {
     const filterConfig = filterConfigs.find(f => f.key === filterKey);
@@ -165,7 +158,7 @@ const getAvailableOptions = (filterKey) => {
 };
 
 const removeProduct = (product) => {
-    products.value = products.value.filter(p => p !== product);
+    // Ne rien faire - les produits viennent du store
 }
 
 const resetFilters = () => {
@@ -183,9 +176,7 @@ const filteredProducts = computed(() => {
         return product.price && !isNaN(price) && price > 0;
     });
     
-    // Note: Le filtre du router est déjà appliqué côté API
-    // On applique seulement les filtres de la sidebar ici
-    
+    // Appliquer les filtres de la sidebar
     Object.keys(selectedFilters).forEach(key => {
         if (selectedFilters[key].length > 0) {
             const filterConfig = filterConfigs.find(f => f.key === key);
@@ -200,7 +191,7 @@ const filteredProducts = computed(() => {
     });
     
     return filtered;
-})
+});
 
 const totalPages = computed(() => Math.ceil(filteredProducts.value.length / itemsPerPage));
 
@@ -228,14 +219,14 @@ watch(() => Object.values(selectedFilters), () => {
     currentPage.value = 1;
 });
 
-// Recharger les produits quand la route change
+// Réinitialiser la page quand la route change
 watch(() => [props.filterKey, props.filterValue], () => {
-    getProducts();
     currentPage.value = 1;
 }, { immediate: false });
 
 onMounted(() => {
-    getProducts();
+    // Les produits sont déjà chargés dans App.vue
+    productStore.loadProducts();
 });
 
 </script>
