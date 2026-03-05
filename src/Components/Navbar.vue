@@ -2,7 +2,7 @@
     <nav class="navbar">
         <div class="navbar-container">
             <RouterLink to="/" class="navbar-brand">Its-Time</RouterLink>
-            
+
             <div class="navbar-menu">
                 <div class="menu-item">
                     <button class="menu-toggle" @click="toggleSubmenu('brands')">
@@ -10,33 +10,47 @@
                         <span class="arrow" :class="{ open: openMenus.brands }">›</span>
                     </button>
                     <div class="submenu" v-show="openMenus.brands">
-                        <RouterLink 
-                            v-for="brand in brands" 
-                            :key="brand" 
+                        <RouterLink
+                            v-for="brand in brands"
+                            :key="brand"
                             :to="`/marque/${brand}`"
                             class="submenu-item"
-                            @click="openMenus.brands = false">
+                            @click="openMenus.brands = false"
+                        >
                             {{ brand }}
                         </RouterLink>
                     </div>
                 </div>
-                
+
                 <div class="menu-item">
                     <button class="menu-toggle" @click="toggleSubmenu('types')">
                         <span>Types de produits</span>
                         <span class="arrow" :class="{ open: openMenus.types }">›</span>
                     </button>
                     <div class="submenu" v-show="openMenus.types">
-                        <RouterLink 
-                            v-for="type in types" 
-                            :key="type" 
+                        <RouterLink
+                            v-for="type in types"
+                            :key="type"
                             :to="`/type/${type}`"
                             class="submenu-item"
-                            @click="openMenus.types = false">
+                            @click="openMenus.types = false"
+                        >
                             {{ type }}
                         </RouterLink>
                     </div>
                 </div>
+            </div>
+
+            <div class="navbar-actions">
+                <RouterLink to="/favoris" class="icon-link" aria-label="Voir les favoris">
+                    <span class="action-icon">♥</span>
+                    <span v-if="favoritesStore.totalItems > 0" class="item-badge">{{ favoritesStore.totalItems }}</span>
+                </RouterLink>
+
+                <RouterLink to="/panier" class="icon-link" aria-label="Voir le panier">
+                    <span class="action-icon">🛒</span>
+                    <span v-if="cartStore.totalItems > 0" class="item-badge">{{ cartStore.totalItems }}</span>
+                </RouterLink>
             </div>
         </div>
     </nav>
@@ -45,7 +59,12 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { RouterLink } from 'vue-router';
+import { useCartStore } from '../stores/cart';
+import { useFavoritesStore } from '../stores/favorites';
 import api from '../../fichier';
+
+const cartStore = useCartStore();
+const favoritesStore = useFavoritesStore();
 
 const openMenus = ref({
     brands: false,
@@ -63,13 +82,12 @@ const loadMenuData = async () => {
     try {
         const response = await api.get('/api/v1/products.json');
         const data = Array.isArray(response.data) ? response.data : response.data.products || [];
-        
-        // Filtrer uniquement les produits avec prix valide
+
         const validProducts = data.filter(product => {
             const price = parseFloat(product.price);
             return product.price && !isNaN(price) && price > 0;
         });
-        
+
         brands.value = [...new Set(validProducts.map(p => p.brand).filter(Boolean))].sort();
         types.value = [...new Set(validProducts.map(p => p.product_type).filter(Boolean))].sort();
     } catch (error) {
@@ -195,6 +213,46 @@ onMounted(() => {
     border-radius: 3px;
 }
 
+.navbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-left: auto;
+}
+
+.icon-link {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    padding: 8px 6px;
+    transition: transform 0.2s ease;
+}
+
+.icon-link:hover {
+    transform: scale(1.1);
+}
+
+.action-icon {
+    font-size: 1.5rem;
+    color: #111;
+}
+
+.item-badge {
+    position: absolute;
+    top: -2px;
+    right: -8px;
+    background-color: #000;
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 10px;
+    min-width: 18px;
+    text-align: center;
+}
+
 @media (max-width: 768px) {
     .navbar-container {
         flex-direction: column;
@@ -202,13 +260,18 @@ onMounted(() => {
         gap: 15px;
         padding: 15px 20px;
     }
-    
+
     .navbar-menu {
         width: 100%;
         flex-direction: column;
         gap: 10px;
     }
-    
+
+    .navbar-actions {
+        margin-left: 0;
+        align-self: flex-end;
+    }
+
     .submenu {
         position: static;
         border: none;

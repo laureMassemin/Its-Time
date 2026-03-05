@@ -27,7 +27,12 @@
                 <div class="colors" v-if="product.product_colors && product.product_colors.length > 0">
                     <h2>Couleurs disponibles ({{ product.product_colors.length }})</h2>
                     <div class="colors-grid">
-                        <div v-for="color in product.product_colors" :key="color.hex_value" class="color-item">
+                        <div 
+                            v-for="color in product.product_colors" 
+                            :key="color.hex_value" 
+                            class="color-item"
+                            :class="{ selected: selectedColor?.hex_value === color.hex_value }"
+                            @click="selectedColor = color">
                             <div class="color-swatch" :style="{ backgroundColor: color.hex_value }"></div>
                             <span class="color-name">{{ color.colour_name }}</span>
                         </div>
@@ -59,7 +64,29 @@
                     </a>
                 </div>
                 
-                <button class="add-to-cart-btn">Ajouter au panier</button>
+                <div class="add-to-cart-section">
+                    <div v-if="product.product_colors && product.product_colors.length > 0 && !selectedColor" class="color-warning">
+                        Veuillez sélectionner une couleur
+                    </div>
+                    <div class="actions-row">
+                        <button
+                            class="add-to-cart-btn"
+                            @click="handleAddToCart"
+                            :disabled="product.product_colors && product.product_colors.length > 0 && !selectedColor"
+                        >
+                            Ajouter au panier
+                        </button>
+                        <button
+                            class="add-to-favorites-btn"
+                            @click="handleAddToFavorites"
+                            :disabled="product.product_colors && product.product_colors.length > 0 && !selectedColor"
+                        >
+                            {{ isCurrentSelectionFavorite() ? 'Retirer des favoris' : 'Ajouter aux favoris' }}
+                        </button>
+                    </div>
+                    <div v-if="addedMessage" class="added-message">✓ Ajouté au panier</div>
+                    <div v-if="favoriteMessage" class="favorite-message">✓ Favoris mis à jour</div>
+                </div>
                 
                 <div class="meta-info">
                     <div v-if="product.created_at" class="meta-item">Ajouté le {{ formatDate(product.created_at) }}</div>
@@ -73,10 +100,18 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
+import { useCartStore } from '../stores/cart';
+import { useFavoritesStore } from '../stores/favorites';
 import api from '../../fichier';
 
 const route = useRoute();
+const cartStore = useCartStore();
+const favoritesStore = useFavoritesStore();
+
 const product = ref(null);
+const selectedColor = ref(null);
+const addedMessage = ref(false);
+const favoriteMessage = ref(false);
 const loading = ref(true);
 const error = ref(null);
 
@@ -103,6 +138,40 @@ const getProduct = async () => {
 
 const handleImageError = (e) => {
     e.target.src = 'https://via.placeholder.com/400x400?text=Image+non+disponible';
+};
+
+const handleAddToCart = () => {
+    if (product.value.product_colors && product.value.product_colors.length > 0 && !selectedColor.value) {
+        return;
+    }
+    
+    cartStore.addToCart(product.value, selectedColor.value);
+    
+    addedMessage.value = true;
+    setTimeout(() => {
+        addedMessage.value = false;
+    }, 2000);
+};
+
+const handleAddToFavorites = () => {
+    if (product.value.product_colors && product.value.product_colors.length > 0 && !selectedColor.value) {
+        return;
+    }
+
+    favoritesStore.toggleFavorite(product.value, selectedColor.value);
+
+    favoriteMessage.value = true;
+    setTimeout(() => {
+        favoriteMessage.value = false;
+    }, 2000);
+};
+
+const isCurrentSelectionFavorite = () => {
+    if (!product.value) {
+        return false;
+    }
+
+    return favoritesStore.isFavorite(product.value.id, selectedColor.value);
 };
 
 const formatDate = (dateString) => {
@@ -246,6 +315,19 @@ onMounted(() => {
     flex-direction: column;
     align-items: center;
     gap: 4px;
+    cursor: pointer;
+    padding: 4px;
+    border: 2px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.color-item:hover {
+    border-color: #ddd;
+}
+
+.color-item.selected {
+    border-color: #000;
+    background-color: #fafafa;
 }
 
 .color-swatch {
@@ -318,6 +400,25 @@ onMounted(() => {
     color: #000;
 }
 
+.add-to-cart-section {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.actions-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.color-warning {
+    font-size: 0.85rem;
+    color: #e74c3c;
+    font-style: italic;
+}
+
 .add-to-cart-btn {
     padding: 16px 32px;
     background-color: #000;
@@ -330,12 +431,54 @@ onMounted(() => {
     text-transform: uppercase;
     letter-spacing: 1px;
     transition: background-color 0.2s ease;
-    margin-top: 20px;
     width: fit-content;
 }
 
-.add-to-cart-btn:hover {
+.add-to-favorites-btn {
+    padding: 16px 24px;
+    background-color: transparent;
+    color: #000;
+    border: 1px solid #000;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: 'Montserrat', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: background-color 0.2s ease, color 0.2s ease;
+    width: fit-content;
+}
+
+.add-to-cart-btn:hover:not(:disabled) {
     background-color: #333;
+}
+
+.add-to-cart-btn:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+.add-to-favorites-btn:hover:not(:disabled) {
+    background-color: #000;
+    color: #fff;
+}
+
+.add-to-favorites-btn:disabled {
+    border-color: #ccc;
+    color: #999;
+    cursor: not-allowed;
+}
+
+.added-message {
+    font-size: 0.9rem;
+    color: #27ae60;
+    font-weight: 500;
+}
+
+.favorite-message {
+    font-size: 0.9rem;
+    color: #27ae60;
+    font-weight: 500;
 }
 
 .meta-info {

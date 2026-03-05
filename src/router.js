@@ -1,6 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import ProductList from './Components/ProductList.vue';
 import ProductDetails from './views/ProductDetails.vue';
+import Cart from './views/Cart.vue';
+import Favorites from './views/Favorites.vue';
 
 const routes = [
     {
@@ -33,6 +35,16 @@ const routes = [
         path: '/produit/:id',
         name: 'ProductDetails',
         component: ProductDetails
+    },
+    {
+        path: '/panier',
+        name: 'Cart',
+        component: Cart
+    },
+    {
+        path: '/favoris',
+        name: 'Favorites',
+        component: Favorites
     }
 ];
 
