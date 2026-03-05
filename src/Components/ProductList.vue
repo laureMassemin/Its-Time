@@ -11,6 +11,57 @@
         </div>
         <div v-else class="content">
             <div class="filters">
+                <!-- Prix Filter -->
+                <div class="filter-section price-filter-section">
+                    <div class="filter-title" @click="toggleFilter('price')">
+                        <span>Prix</span>
+                        <span class="toggle-icon">{{ openFilters.price ? '−' : '+' }}</span>
+                    </div>
+                    <div class="filter-options price-filter-options" v-show="openFilters.price">
+                        <div class="price-inputs">
+                            <div class="price-input-group">
+                                <label>Min</label>
+                                <div class="input-wrapper">
+                                    <input 
+                                        type="number" 
+                                        v-model.number="priceRange.min"
+                                        :min="availablePriceRange.min"
+                                        :max="priceRange.max"
+                                        class="price-input">
+                                </div>
+                            </div>
+                            <div class="price-input-group">
+                                <label>Max</label>
+                                <div class="input-wrapper">
+                                    <input 
+                                        type="number" 
+                                        v-model.number="priceRange.max"
+                                        :min="priceRange.min"
+                                        :max="availablePriceRange.max"
+                                        class="price-input">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="range-slider-container">
+                            <input 
+                                type="range" 
+                                v-model.number="priceRange.min"
+                                :min="availablePriceRange.min"
+                                :max="availablePriceRange.max"
+                                class="range-slider range-slider-min">
+                            <input 
+                                type="range" 
+                                v-model.number="priceRange.max"
+                                :min="availablePriceRange.min"
+                                :max="availablePriceRange.max"
+                                class="range-slider range-slider-max">
+                        </div>
+                        
+                        <button class="reset-price-btn" @click="priceRange.min = availablePriceRange.min; priceRange.max = availablePriceRange.max;">RETOUR</button>
+                    </div>
+                </div>
+
                 <div v-for="filter in filterConfigs" :key="filter.key" class="filter-section">
                     <div class="filter-title" @click="toggleFilter(filter.key)">
                         <span>{{ filter.allLabel }}</span>
@@ -80,9 +131,15 @@ const selectedFilters = reactive(
     Object.fromEntries(filterConfigs.map(f => [f.key, []]))
 );
 
-const openFilters = reactive(
-    Object.fromEntries(filterConfigs.map(f => [f.key, false]))
-);
+const priceRange = reactive({
+    min: 0,
+    max: 10000
+});
+
+const openFilters = reactive({
+    ...Object.fromEntries(filterConfigs.map(f => [f.key, false])),
+    price: false
+});
 
 const allFilterOptions = ref({});
 
@@ -165,6 +222,8 @@ const resetFilters = () => {
     Object.keys(selectedFilters).forEach(key => {
         selectedFilters[key] = [];
     });
+    priceRange.min = availablePriceRange.value.min;
+    priceRange.max = availablePriceRange.value.max;
 }
 
 const filteredProducts = computed(() => {
@@ -190,10 +249,28 @@ const filteredProducts = computed(() => {
         }
     });
     
+    // Appliquer le filtre prix
+    filtered = filtered.filter(product => {
+        const price = parseFloat(product.price);
+        return price >= priceRange.min && price <= priceRange.max;
+    });
+    
     return filtered;
 });
 
 const totalPages = computed(() => Math.ceil(filteredProducts.value.length / itemsPerPage));
+
+const availablePriceRange = computed(() => {
+    const prices = products.value
+        .map(p => parseFloat(p.price))
+        .filter(price => !isNaN(price) && price > 0)
+        .sort((a, b) => a - b);
+    
+    return {
+        min: prices.length > 0 ? Math.floor(prices[0]) : 0,
+        max: prices.length > 0 ? Math.ceil(prices[prices.length - 1]) : 10000
+    };
+});
 
 const paginatedProducts = computed(() => {
     const start = (currentPage.value - 1) * itemsPerPage;
@@ -218,6 +295,18 @@ const previousPage = () => {
 watch(() => Object.values(selectedFilters), () => {
     currentPage.value = 1;
 });
+
+// Initialiser les prix quand les produits changent
+watch(
+    () => availablePriceRange.value,
+    (newRange) => {
+        if (priceRange.min === 0 && priceRange.max === 10000) {
+            priceRange.min = newRange.min;
+            priceRange.max = newRange.max;
+        }
+    },
+    { immediate: true }
+);
 
 // Réinitialiser la page quand la route change
 watch(() => [props.filterKey, props.filterValue], () => {
@@ -372,6 +461,184 @@ onMounted(() => {
     font-size: 0.8rem;
     color: #555;
     user-select: none;
+}
+
+/* Price Filter Styles */
+.price-filter-section {
+    padding-top: 12px;
+}
+
+.price-filter-options {
+    max-height: 100%;
+    overflow: visible;
+    padding: 12px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.price-inputs {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.price-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.price-input-group label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #333;
+    text-transform: uppercase;
+}
+
+.input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    border: 1px solid #ddd;
+    border-radius: 2px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+}
+
+.input-wrapper:hover {
+    border-color: #d4364f;
+}
+
+.currency {
+    position: absolute;
+    left: 6px;
+    font-size: 0.8rem;
+    color: #666;
+    font-weight: 500;
+    pointer-events: none;
+}
+
+.price-input {
+    width: 100%;
+    padding: 6px 6px 6px 20px;
+    border: none;
+    font-size: 0.85rem;
+    background: transparent;
+    outline: none;
+    -moz-appearance: textfield;
+}
+
+.price-input::-webkit-outer-spin-button,
+.price-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.range-slider-container {
+    position: relative;
+    height: 5px;
+    margin: 16px 0 12px 0;
+}
+
+.range-slider {
+    position: absolute;
+    width: 100%;
+    height: 5px;
+    top: 0;
+    background: transparent;
+    -webkit-appearance: none;
+    appearance: none;
+    pointer-events: none;
+    outline: none;
+}
+
+.range-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #d4364f;
+    cursor: pointer;
+    pointer-events: auto;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s;
+}
+
+.range-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.1);
+    box-shadow: 0 2px 6px rgba(212, 54, 79, 0.3);
+}
+
+.range-slider::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #d4364f;
+    cursor: pointer;
+    pointer-events: auto;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: all 0.2s;
+}
+
+.range-slider::-moz-range-thumb:hover {
+    transform: scale(1.1);
+    box-shadow: 0 2px 6px rgba(212, 54, 79, 0.3);
+}
+
+.range-slider-min {
+    z-index: 5;
+}
+
+.range-slider-max {
+    z-index: 4;
+}
+
+.range-slider::-webkit-slider-runnable-track {
+    background: linear-gradient(
+        to right,
+        #ddd,
+        #d4364f 0%,
+        #d4364f 100%,
+        #ddd
+    );
+    height: 5px;
+    border-radius: 2px;
+}
+
+.range-slider::-moz-range-track {
+    background: linear-gradient(
+        to right,
+        #ddd,
+        #d4364f 0%,
+        #d4364f 100%,
+        #ddd
+    );
+    height: 5px;
+    border-radius: 2px;
+    border: none;
+}
+
+.reset-price-btn {
+    padding: 6px 12px;
+    background-color: transparent;
+    color: #666;
+    border: 1px solid #ddd;
+    border-radius: 0;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.5px;
+}
+
+.reset-price-btn:hover {
+    color: #d4364f;
+    border-color: #d4364f;
 }
 
 .reset-btn {
