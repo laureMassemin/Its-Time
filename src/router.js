@@ -3,6 +3,8 @@ import ProductList from './Components/ProductList.vue';
 import ProductDetails from './views/ProductDetails.vue';
 import Cart from './views/Cart.vue';
 import Favorites from './views/Favorites.vue';
+import AllBrands from './views/AllBrands.vue';
+import AllCategories from './views/AllCategories.vue';
 
 const routes = [
     {
@@ -10,6 +12,16 @@ const routes = [
         name: 'Home',
         component: ProductList,
         props: { title: 'Tous nos produits' }
+    },
+    {
+        path: '/marques',
+        name: 'AllBrands',
+        component: AllBrands
+    },
+    {
+        path: '/categories',
+        name: 'AllCategories',
+        component: AllCategories
     },
     {
         path: '/marque/:brand',

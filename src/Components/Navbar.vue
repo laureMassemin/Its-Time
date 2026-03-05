@@ -79,18 +79,16 @@ import { ref, onMounted, computed } from 'vue';
 import { RouterLink } from 'vue-router';
 import { useCartStore } from '../stores/cart';
 import { useFavoritesStore } from '../stores/favorites';
-import api from '../../fichier';
+import { useProductStore } from '../stores/products';
 
 const cartStore = useCartStore();
 const favoritesStore = useFavoritesStore();
+const productStore = useProductStore();
 
 const openMenus = ref({
     brands: false,
     types: false
 });
-
-const brands = ref([]);
-const types = ref([]);
 
 const toggleSubmenu = (menu) => {
     openMenus.value[menu] = !openMenus.value[menu];
@@ -100,11 +98,11 @@ const toggleSubmenu = (menu) => {
 const brandsColumns = computed(() => {
     const itemsPerColumn = 6;
     const maxColumns = 4;
-    const numColumns = Math.min(Math.ceil(brands.value.length / itemsPerColumn), maxColumns);
+    const numColumns = Math.min(Math.ceil(productStore.brands.length / itemsPerColumn), maxColumns);
     const columns = [];
     for (let i = 0; i < numColumns; i++) {
         const start = i * itemsPerColumn;
-        columns.push(brands.value.slice(start, start + itemsPerColumn));
+        columns.push(productStore.brands.slice(start, start + itemsPerColumn));
     }
     return columns.filter(col => col.length > 0);
 });
@@ -112,34 +110,17 @@ const brandsColumns = computed(() => {
 const typesColumns = computed(() => {
     const itemsPerColumn = 6;
     const maxColumns = 4;
-    const numColumns = Math.min(Math.ceil(types.value.length / itemsPerColumn), maxColumns);
+    const numColumns = Math.min(Math.ceil(productStore.types.length / itemsPerColumn), maxColumns);
     const columns = [];
     for (let i = 0; i < numColumns; i++) {
         const start = i * itemsPerColumn;
-        columns.push(types.value.slice(start, start + itemsPerColumn));
+        columns.push(productStore.types.slice(start, start + itemsPerColumn));
     }
     return columns.filter(col => col.length > 0);
 });
 
-const loadMenuData = async () => {
-    try {
-        const response = await api.get('/api/v1/products.json');
-        const data = Array.isArray(response.data) ? response.data : response.data.products || [];
-
-        const validProducts = data.filter(product => {
-            const price = parseFloat(product.price);
-            return product.price && !isNaN(price) && price > 0;
-        });
-
-        brands.value = [...new Set(validProducts.map(p => p.brand).filter(Boolean))].sort();
-        types.value = [...new Set(validProducts.map(p => p.product_type).filter(Boolean))].sort();
-    } catch (error) {
-        console.error('Erreur menu:', error);
-    }
-};
-
 onMounted(() => {
-    loadMenuData();
+    productStore.loadProducts();
 });
 </script>
 
