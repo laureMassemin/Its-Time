@@ -5,38 +5,56 @@
 
             <div class="navbar-menu">
                 <div class="menu-item">
-                    <button class="menu-toggle" @click="toggleSubmenu('brands')">
+                    <button class="menu-trigger" @click="toggleSubmenu('brands')">
                         <span>Marques</span>
-                        <span class="arrow" :class="{ open: openMenus.brands }">›</span>
+                        <span class="arrow" :class="{ open: openMenus.brands }">↓</span>
                     </button>
-                    <div class="submenu" v-show="openMenus.brands">
-                        <RouterLink
-                            v-for="brand in brands"
-                            :key="brand"
-                            :to="`/marque/${brand}`"
-                            class="submenu-item"
-                            @click="openMenus.brands = false"
-                        >
-                            {{ brand }}
-                        </RouterLink>
+                    <div class="mega-menu" v-show="openMenus.brands">
+                        <div class="mega-menu-content">
+                            <div class="mega-menu-column" v-for="(column, index) in brandsColumns" :key="index">
+                                <div v-for="brand in column" :key="brand">
+                                    <RouterLink
+                                        :to="`/marque/${brand}`"
+                                        class="mega-menu-item"
+                                        @click="openMenus.brands = false"
+                                    >
+                                        {{ brand }}
+                                    </RouterLink>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mega-menu-footer">
+                            <RouterLink to="/marques" class="mega-menu-footer-link" @click="openMenus.brands = false">
+                                Voir toutes les marques
+                            </RouterLink>
+                        </div>
                     </div>
                 </div>
 
                 <div class="menu-item">
-                    <button class="menu-toggle" @click="toggleSubmenu('types')">
+                    <button class="menu-trigger" @click="toggleSubmenu('types')">
                         <span>Types de produits</span>
-                        <span class="arrow" :class="{ open: openMenus.types }">›</span>
+                        <span class="arrow" :class="{ open: openMenus.types }">↓</span>
                     </button>
-                    <div class="submenu" v-show="openMenus.types">
-                        <RouterLink
-                            v-for="type in types"
-                            :key="type"
-                            :to="`/type/${type}`"
-                            class="submenu-item"
-                            @click="openMenus.types = false"
-                        >
-                            {{ type }}
-                        </RouterLink>
+                    <div class="mega-menu" v-show="openMenus.types">
+                        <div class="mega-menu-content">
+                            <div class="mega-menu-column" v-for="(column, index) in typesColumns" :key="index">
+                                <div v-for="type in column" :key="type">
+                                    <RouterLink
+                                        :to="`/type/${type}`"
+                                        class="mega-menu-item"
+                                        @click="openMenus.types = false"
+                                    >
+                                        {{ type }}
+                                    </RouterLink>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mega-menu-footer">
+                            <RouterLink to="/categories" class="mega-menu-footer-link" @click="openMenus.types = false">
+                                Voir toutes les catégories
+                            </RouterLink>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -57,7 +75,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { RouterLink } from 'vue-router';
 import { useCartStore } from '../stores/cart';
 import { useFavoritesStore } from '../stores/favorites';
@@ -77,6 +95,31 @@ const types = ref([]);
 const toggleSubmenu = (menu) => {
     openMenus.value[menu] = !openMenus.value[menu];
 };
+
+// Diviser les items en colonnes pour le mega menu (max 6 items par colonne, max 4 colonnes)
+const brandsColumns = computed(() => {
+    const itemsPerColumn = 6;
+    const maxColumns = 4;
+    const numColumns = Math.min(Math.ceil(brands.value.length / itemsPerColumn), maxColumns);
+    const columns = [];
+    for (let i = 0; i < numColumns; i++) {
+        const start = i * itemsPerColumn;
+        columns.push(brands.value.slice(start, start + itemsPerColumn));
+    }
+    return columns.filter(col => col.length > 0);
+});
+
+const typesColumns = computed(() => {
+    const itemsPerColumn = 6;
+    const maxColumns = 4;
+    const numColumns = Math.min(Math.ceil(types.value.length / itemsPerColumn), maxColumns);
+    const columns = [];
+    for (let i = 0; i < numColumns; i++) {
+        const start = i * itemsPerColumn;
+        columns.push(types.value.slice(start, start + itemsPerColumn));
+    }
+    return columns.filter(col => col.length > 0);
+});
 
 const loadMenuData = async () => {
     try {
@@ -102,31 +145,34 @@ onMounted(() => {
 
 <style scoped>
 .navbar {
-    background: white;
-    border-bottom: 1px solid #ddd;
-    font-family: 'Montserrat', sans-serif;
+    background: #ffffff;
+    border-bottom: 1px solid #f0f0f0;
+    font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
     position: sticky;
     top: 0;
     z-index: 100;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
 }
 
 .navbar-container {
-    max-width: 1600px;
+    max-width: 1400px;
     margin: 0 auto;
-    padding: 0 20px;
+    padding: 0 32px;
     display: flex;
     align-items: center;
-    height: 60px;
-    gap: 40px;
+    height: 72px;
+    gap: 56px;
 }
 
 .navbar-brand {
-    font-size: 1.3rem;
+    font-size: 1.5rem;
     font-weight: 700;
-    color: #333;
-    min-width: 120px;
+    letter-spacing: -0.5px;
+    color: #1a1a1a;
+    min-width: 140px;
     text-decoration: none;
-    transition: color 0.2s ease;
+    transition: color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-family: 'Montserrat', sans-serif;
 }
 
 .navbar-brand:hover {
@@ -135,88 +181,157 @@ onMounted(() => {
 
 .navbar-menu {
     display: flex;
-    gap: 30px;
+    gap: 48px;
     flex: 1;
 }
 
 .menu-item {
     position: relative;
+    height: 72px;
+    display: flex;
+    align-items: center;
 }
 
-.menu-toggle {
+.menu-trigger {
     background: none;
     border: none;
-    padding: 8px 0;
-    font-size: 0.9rem;
+    padding: 8px 2px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.3px;
     cursor: pointer;
-    color: #333;
+    color: #1a1a1a;
     font-family: 'Montserrat', sans-serif;
-    font-weight: 500;
     display: flex;
     align-items: center;
     gap: 6px;
-    transition: color 0.2s ease;
+    transition: color 0.3s ease;
+    text-transform: uppercase;
+    position: relative;
 }
 
-.menu-toggle:hover {
-    color: #000;
+.menu-trigger:hover {
+    color: #d4364f;
+}
+
+.menu-trigger::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: #d4364f;
+    transform: scaleX(0);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.menu-trigger:hover::after {
+    transform: scaleX(1);
 }
 
 .arrow {
-    display: inline-block;
-    transition: transform 0.2s ease;
-    font-size: 1.2rem;
-    line-height: 1;
+    display: none;
 }
 
-.arrow.open {
-    transform: rotate(90deg);
-}
-
-.submenu {
-    position: absolute;
-    top: 100%;
+.mega-menu {
+    position: fixed;
+    top: 72px;
     left: 0;
-    background: white;
-    border: 1px solid #ddd;
-    border-top: none;
-    min-width: 200px;
-    max-height: 300px;
-    overflow-y: auto;
+    right: 0;
+    width: 100%;
+    background: #ffffff;
+    border: none;
+    border-top: 2px solid #d4364f;
+    border-radius: 0;
     z-index: 1000;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), 
+                visibility 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+                transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    pointer-events: none;
 }
 
-.submenu-item {
+.menu-item:hover .mega-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+    pointer-events: all;
+}
+
+.mega-menu-content {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 40px;
+    padding: 40px 52px;
+    max-height: 30vh;
+    overflow-y: auto;
+}
+
+.mega-menu-column {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.mega-menu-column-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #1a1a1a;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.mega-menu-item {
     display: block;
-    padding: 8px 16px;
     color: #666;
     text-decoration: none;
+    font-size: 0.8rem;
+    font-weight: 400;
+    letter-spacing: 0.1px;
+    transition: color 0.2s ease, padding-left 0.2s ease;
+    padding-left: 0;
+}
+
+.mega-menu-item:hover {
+    color: #d4364f;
+    padding-left: 6px;
+}
+
+.mega-menu-footer {
+    padding: 20px 52px;
+    border-top: 1px solid #f0f0f0;
+    background: #fafafa;
+}
+
+.mega-menu-footer-link {
+    display: inline-block;
+    color: #d4364f;
+    text-decoration: none;
     font-size: 0.85rem;
-    transition: background-color 0.2s ease, color 0.2s ease;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    transition: color 0.3s ease;
+    padding: 10px 16px;
+    border: 1px solid #d4364f;
+    border-radius: 4px;
 }
 
-.submenu-item:hover {
-    background-color: #f5f5f5;
-    color: #000;
-}
-
-.submenu::-webkit-scrollbar {
-    width: 6px;
-}
-
-.submenu::-webkit-scrollbar-track {
-    background: #f1f1f1;
-}
-
-.submenu::-webkit-scrollbar-thumb {
-    background: #ddd;
-    border-radius: 3px;
+.mega-menu-footer-link:hover {
+    background-color: #d4364f;
+    color: white;
 }
 
 .navbar-actions {
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: 28px;
     margin-left: auto;
 }
 
@@ -226,57 +341,160 @@ onMounted(() => {
     align-items: center;
     justify-content: center;
     text-decoration: none;
-    padding: 8px 6px;
+    padding: 12px;
     transition: transform 0.2s ease;
 }
 
 .icon-link:hover {
-    transform: scale(1.1);
+    transform: scale(1.15);
 }
 
 .action-icon {
-    font-size: 1.5rem;
-    color: #111;
+    font-size: 1.4rem;
+    color: #1a1a1a;
 }
 
 .item-badge {
     position: absolute;
-    top: -2px;
-    right: -8px;
-    background-color: #000;
+    top: 0;
+    right: 0;
+    background-color: #d4364f;
     color: white;
-    font-size: 0.7rem;
-    font-weight: 600;
-    padding: 2px 6px;
-    border-radius: 10px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    padding: 2px 5px;
+    border-radius: 8px;
     min-width: 18px;
     text-align: center;
+}
+
+@media (max-width: 992px) {
+    .navbar-container {
+        padding: 0 24px;
+        gap: 40px;
+    }
+
+    .navbar-menu {
+        gap: 32px;
+    }
+
+    .mega-menu {
+        left: 0;
+        right: 0;
+    }
+
+    .mega-menu-content {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 24px;
+        padding: 28px 32px;
+    }
+
+    .mega-menu-column {
+        gap: 14px;
+    }
+
+    .mega-menu-footer {
+        padding: 16px 32px;
+    }
 }
 
 @media (max-width: 768px) {
     .navbar-container {
         flex-direction: column;
         height: auto;
-        gap: 15px;
-        padding: 15px 20px;
+        gap: 20px;
+        padding: 16px 20px;
+    }
+
+    .menu-item {
+        height: auto;
+        width: 100%;
+    }
+
+    .menu-trigger {
+        width: 100%;
+        justify-content: space-between;
+        padding: 12px 0;
+        font-size: 0.9rem;
+        text-transform: none;
+    }
+
+    .menu-trigger::after {
+        display: none;
+    }
+
+    .arrow {
+        display: inline-block;
+        transition: transform 0.3s ease;
+        font-size: 0.7rem;
+        line-height: 1;
+    }
+
+    .arrow.open {
+        transform: rotate(180deg);
     }
 
     .navbar-menu {
         width: 100%;
         flex-direction: column;
-        gap: 10px;
+        gap: 12px;
     }
 
     .navbar-actions {
         margin-left: 0;
         align-self: flex-end;
+        gap: 20px;
     }
 
-    .submenu {
+    .mega-menu {
         position: static;
+        transform: none;
         border: none;
-        background: #f8f8f8;
-        max-height: 150px;
+        border-top: 1px solid #f0f0f0;
+        background: #fafafa;
+        border-radius: 0;
+        box-shadow: none;
+        opacity: 1;
+        visibility: visible;
+        pointer-events: all;
+        margin-top: 12px;
+    }
+
+    .mega-menu:is([style*="display: none"]) {
+        opacity: 0;
+        visibility: hidden;
+        display: none !important;
+    }
+
+    .mega-menu-content {
+        grid-template-columns: 1fr;
+        gap: 20px;
+        padding: 20px 0;
+        max-height: none;
+    }
+
+    .mega-menu-column-title {
+        display: none;
+    }
+
+    .mega-menu-footer {
+        padding: 16px 20px;
+        text-align: center;
+    }
+
+    .mega-menu-footer-link {
+        width: 100%;
+        display: block;
+    }
+}
+
+@media (max-width: 480px) {
+    .navbar-container {
+        gap: 12px;
+    }
+
+    .mega-menu-content {
+        grid-template-columns: 1fr;
     }
 }
 </style>
