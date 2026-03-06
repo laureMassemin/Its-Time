@@ -5,7 +5,6 @@ import { useProductStore } from './stores/products';
 
 const productStore = useProductStore();
 
-// Charger les produits une fois au démarrage
 onMounted(() => {
     productStore.loadProducts();
 });

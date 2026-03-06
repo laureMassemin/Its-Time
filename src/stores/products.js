@@ -9,13 +9,12 @@ export const useProductStore = defineStore('products', () => {
     const loading = ref(false);
     const error = ref(null);
     const lastFetchTime = ref(null);
-    const cacheExpiry = 1800000; // 30 minutes
+    const cacheExpiry = 1800000; 
 
     const loadProducts = async (forceRefresh = false) => {
-        // Vérifier si les données sont en cache et fraîches
         if (products.value.length > 0 && lastFetchTime.value && !forceRefresh) {
             if (Date.now() - lastFetchTime.value < cacheExpiry) {
-                return; // Utiliser le cache
+                return;
             }
         }
 
@@ -25,7 +24,6 @@ export const useProductStore = defineStore('products', () => {
             const response = await api.get('/api/v1/products.json');
             let data = response.data;
             
-            // Gérer différents formats de réponse
             if (typeof data === 'string') {
                 data = JSON.parse(data);
             }
@@ -35,7 +33,6 @@ export const useProductStore = defineStore('products', () => {
             } else if (data && data.products && Array.isArray(data.products)) {
                 data = data.products;
             } else if (data && typeof data === 'object') {
-                // Chercher un tableau dans l'objet
                 const arrays = Object.values(data).filter(v => Array.isArray(v));
                 if (arrays.length > 0) {
                     data = arrays[0];
@@ -53,7 +50,6 @@ export const useProductStore = defineStore('products', () => {
 
             products.value = validProducts;
             
-            // Extraire les marques et types uniques
             brands.value = [...new Set(validProducts.map(p => p.brand).filter(Boolean))].sort();
             types.value = [...new Set(validProducts.map(p => p.product_type).filter(Boolean))].sort();
             

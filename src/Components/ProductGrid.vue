@@ -28,7 +28,7 @@ const props = defineProps({
     },
     itemsPerPage: {
         type: Number,
-        default: 30
+        default: 32
     }
 });
 
@@ -58,12 +58,10 @@ const previousPage = () => {
     }
 };
 
-// Réinitialiser la page quand les produits changent
 watch(() => props.products, () => {
     currentPage.value = 1;
 });
 
-// Exposer les méthodes si nécessaire
 defineExpose({
     resetPage: () => {
         currentPage.value = 1;

@@ -94,7 +94,6 @@ const toggleSubmenu = (menu) => {
     openMenus.value[menu] = !openMenus.value[menu];
 };
 
-// Diviser les items en colonnes pour le mega menu (max 6 items par colonne, max 4 colonnes)
 const brandsColumns = computed(() => {
     const itemsPerColumn = 6;
     const maxColumns = 4;

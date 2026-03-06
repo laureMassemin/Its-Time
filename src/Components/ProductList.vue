@@ -47,7 +47,6 @@ const currentFilters = ref({
     priceRange: { min: 0, max: 10000 }
 });
 
-// Produits avant application des filtres (juste le filtre de route)
 const baseProducts = computed(() => {
     if (props.filterKey && props.filterValue) {
         return productStore.products.filter(product => {
@@ -62,17 +61,14 @@ const baseProducts = computed(() => {
     return productStore.products;
 });
 
-// Produits filtrés finaux
 const filteredProducts = computed(() => {
     let filtered = baseProducts.value;
 
-    // Filtrer les produits sans prix valide
     filtered = filtered.filter(product => {
         const price = parseFloat(product.price);
         return product.price && !isNaN(price) && price > 0;
     });
 
-    // Appliquer les filtres checkbox
     const selectedFilters = currentFilters.value.selectedFilters;
     const filterConfigs = [
         { key: 'brand', isArray: false },
@@ -96,7 +92,6 @@ const filteredProducts = computed(() => {
         }
     });
 
-    // Appliquer le filtre prix
     const { min, max } = currentFilters.value.priceRange;
     filtered = filtered.filter(product => {
         const price = parseFloat(product.price);
@@ -111,10 +106,8 @@ const handleFiltersUpdate = (filters) => {
 };
 
 const removeProduct = (product) => {
-    // Ne rien faire - les produits viennent du store
 };
 
-// Réinitialiser quand la route change
 watch(() => [props.filterKey, props.filterValue], () => {
     if (filtersRef.value) {
         filtersRef.value.resetAllFilters();

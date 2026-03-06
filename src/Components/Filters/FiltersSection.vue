@@ -59,7 +59,6 @@ const availablePriceRange = computed(() => {
     };
 });
 
-// Initialiser les prix quand availablePriceRange change
 watch(availablePriceRange, (newRange) => {
     if (priceRange.min === 0 && priceRange.max === 10000) {
         priceRange.min = newRange.min;
@@ -89,7 +88,6 @@ const getAvailableOptions = (filterKey) => {
         }
     });
     
-    // Filtrer par prix aussi
     tempFiltered = tempFiltered.filter(product => {
         const price = parseFloat(product.price);
         return price >= priceRange.min && price <= priceRange.max;
@@ -116,7 +114,6 @@ const resetAllFilters = () => {
     priceRange.max = availablePriceRange.value.max;
 };
 
-// Émettre les filtres à chaque changement
 watch([selectedFilters, priceRange], () => {
     emit('update-filters', {
         selectedFilters: { ...selectedFilters },
@@ -124,7 +121,6 @@ watch([selectedFilters, priceRange], () => {
     });
 }, { deep: true, immediate: true });
 
-// Exposer les filtres actuels
 defineExpose({
     resetAllFilters
 });

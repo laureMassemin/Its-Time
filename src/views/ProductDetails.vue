@@ -115,7 +115,6 @@ const addedMessage = ref(false);
 const favoriteMessage = ref(false);
 
 const getProduct = async () => {
-    // Assurer que les produits sont chargés
     await productStore.loadProducts();
     
     const productId = parseInt(route.params.id);
