@@ -3,8 +3,18 @@
         <div class="navbar-container">
             <RouterLink to="/" class="navbar-brand">Its-Time</RouterLink>
 
-            <div class="navbar-menu">
-                <RouterLink to="/produits" class="menu-link">Produits</RouterLink>
+            <button
+                class="mobile-menu-btn"
+                type="button"
+                :aria-expanded="isMobileMenuOpen"
+                aria-label="Ouvrir le menu"
+                @click="toggleMobileMenu"
+            >
+                {{ isMobileMenuOpen ? '✕' : '☰' }}
+            </button>
+
+            <div class="navbar-menu" :class="{ open: isMobileMenuOpen }">
+                <RouterLink to="/produits" class="menu-link" @click="closeMobileMenu">Produits</RouterLink>
                 
                 <div class="menu-item">
                     <button class="menu-trigger" @click="toggleSubmenu('brands')">
@@ -12,13 +22,14 @@
                         <span class="arrow" :class="{ open: openMenus.brands }">↓</span>
                     </button>
                     <div class="mega-menu" v-show="openMenus.brands">
-                        <div class="mega-menu-content">
+                        <div v-if="productStore.loading" class="mega-menu-loading">Chargement des marques...</div>
+                        <div v-else class="mega-menu-content">
                             <div class="mega-menu-column" v-for="(column, index) in brandsColumns" :key="index">
                                 <div v-for="brand in column" :key="brand">
                                     <RouterLink
                                         :to="`/marque/${brand}`"
                                         class="mega-menu-item"
-                                        @click="openMenus.brands = false"
+                                        @click="handleMenuNavigation('brands')"
                                     >
                                         <img 
                                             :src="getBrandImage(brand)" 
@@ -32,7 +43,7 @@
                             </div>
                         </div>
                         <div class="mega-menu-footer">
-                            <RouterLink to="/marques" class="mega-menu-footer-link" @click="openMenus.brands = false">
+                            <RouterLink to="/marques" class="mega-menu-footer-link" @click="handleMenuNavigation('brands')">
                                 Voir toutes les marques
                             </RouterLink>
                         </div>
@@ -45,13 +56,14 @@
                         <span class="arrow" :class="{ open: openMenus.types }">↓</span>
                     </button>
                     <div class="mega-menu" v-show="openMenus.types">
-                        <div class="mega-menu-content">
+                        <div v-if="productStore.loading" class="mega-menu-loading">Chargement des types...</div>
+                        <div v-else class="mega-menu-content">
                             <div class="mega-menu-column" v-for="(column, index) in typesColumns" :key="index">
                                 <div v-for="type in column" :key="type">
                                     <RouterLink
                                         :to="`/type/${type}`"
                                         class="mega-menu-item"
-                                        @click="openMenus.types = false"
+                                        @click="handleMenuNavigation('types')"
                                     >
                                         <img 
                                             :src="getTypeImage(type)" 
@@ -65,7 +77,7 @@
                             </div>
                         </div>
                         <div class="mega-menu-footer">
-                            <RouterLink to="/categories" class="mega-menu-footer-link" @click="openMenus.types = false">
+                            <RouterLink to="/categories" class="mega-menu-footer-link" @click="handleMenuNavigation('types')">
                                 Voir toutes les catégories
                             </RouterLink>
                         </div>
@@ -105,8 +117,38 @@ const openMenus = ref({
     types: false
 });
 
+const isMobileMenuOpen = ref(false);
+
+const closeSubmenus = () => {
+    openMenus.value.brands = false;
+    openMenus.value.types = false;
+};
+
+const closeMobileMenu = () => {
+    isMobileMenuOpen.value = false;
+    closeSubmenus();
+};
+
+const toggleMobileMenu = () => {
+    isMobileMenuOpen.value = !isMobileMenuOpen.value;
+    if (!isMobileMenuOpen.value) {
+        closeSubmenus();
+    }
+};
+
 const toggleSubmenu = (menu) => {
+    if (menu === 'brands') {
+        openMenus.value.types = false;
+    }
+    if (menu === 'types') {
+        openMenus.value.brands = false;
+    }
     openMenus.value[menu] = !openMenus.value[menu];
+};
+
+const handleMenuNavigation = (menu) => {
+    openMenus.value[menu] = false;
+    closeMobileMenu();
 };
 
 const getBrandImage = (brand) => {
@@ -185,6 +227,19 @@ onMounted(() => {
     align-items: center;
     height: 72px;
     gap: 56px;
+}
+
+.mobile-menu-btn {
+    display: none;
+    border: 1px solid #e6e6e6;
+    background: #fff;
+    border-radius: 8px;
+    width: 40px;
+    height: 40px;
+    font-size: 1.1rem;
+    line-height: 1;
+    cursor: pointer;
+    color: #1a1a1a;
 }
 
 .navbar-brand {
@@ -295,6 +350,12 @@ onMounted(() => {
                 visibility 0.3s cubic-bezier(0.4, 0, 0.2, 1),
                 transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     pointer-events: none;
+}
+
+.mega-menu-loading {
+    padding: 20px;
+    color: #666;
+    font-size: 0.9rem;
 }
 
 .menu-item:hover .mega-menu {
@@ -451,23 +512,62 @@ onMounted(() => {
 
 @media (max-width: 768px) {
     .navbar-container {
-        flex-direction: column;
+        display: grid;
+        grid-template-columns: 1fr auto auto;
+        grid-template-areas:
+            "brand actions toggle"
+            "menu menu menu";
         height: auto;
-        gap: 20px;
-        padding: 16px 20px;
+        gap: 10px;
+        padding: 12px 14px;
+        align-items: center;
+    }
+
+    .navbar-brand {
+        grid-area: brand;
+        min-width: 0;
+        font-size: 1.2rem;
+    }
+
+    .mobile-menu-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        grid-area: toggle;
+    }
+
+    .navbar-menu {
+        grid-area: menu;
+        width: 100%;
+        display: none;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+        padding-top: 6px;
+    }
+
+    .navbar-menu.open {
+        display: flex;
+    }
+
+    .menu-link,
+    .menu-trigger {
+        width: 100%;
+        height: auto;
+        min-height: 42px;
+        border: 1px solid #ececec;
+        border-radius: 8px;
+        background: #fff;
+        justify-content: space-between;
+        padding: 10px 12px;
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.2px;
     }
 
     .menu-item {
         height: auto;
         width: 100%;
-    }
-
-    .menu-trigger {
-        width: 100%;
-        justify-content: space-between;
-        padding: 12px 0;
-        font-size: 0.9rem;
-        text-transform: none;
     }
 
     .menu-trigger::after {
@@ -485,30 +585,30 @@ onMounted(() => {
         transform: rotate(180deg);
     }
 
-    .navbar-menu {
-        width: 100%;
-        flex-direction: column;
-        gap: 12px;
+    .navbar-actions {
+        grid-area: actions;
+        margin-left: 0;
+        align-self: center;
+        gap: 8px;
     }
 
-    .navbar-actions {
-        margin-left: 0;
-        align-self: flex-end;
-        gap: 20px;
+    .icon-link {
+        padding: 8px;
     }
 
     .mega-menu {
         position: static;
+        top: auto;
         transform: none;
         border: none;
         border-top: 1px solid #f0f0f0;
         background: #fafafa;
-        border-radius: 0;
+        border-radius: 8px;
         box-shadow: none;
         opacity: 1;
         visibility: visible;
         pointer-events: all;
-        margin-top: 12px;
+        margin-top: 6px;
     }
 
     .mega-menu:is([style*="display: none"]) {
@@ -519,8 +619,8 @@ onMounted(() => {
 
     .mega-menu-content {
         grid-template-columns: 1fr;
-        gap: 20px;
-        padding: 20px 0;
+        gap: 10px;
+        padding: 10px;
         max-height: none;
     }
 
@@ -528,9 +628,26 @@ onMounted(() => {
         display: none;
     }
 
+    .mega-menu-column {
+        gap: 6px;
+    }
+
+    .mega-menu-item {
+        padding: 8px 10px;
+        border-radius: 6px;
+        background: #fff;
+    }
+
+    .mega-menu-item:hover {
+        padding-left: 10px;
+        color: #1a1a1a;
+        background: #f3f3f3;
+    }
+
     .mega-menu-footer {
-        padding: 16px 20px;
+        padding: 10px;
         text-align: center;
+        background: transparent;
     }
 
     .mega-menu-footer-link {
@@ -541,7 +658,23 @@ onMounted(() => {
 
 @media (max-width: 480px) {
     .navbar-container {
-        gap: 12px;
+        padding: 10px 12px;
+        gap: 8px;
+    }
+
+    .navbar-brand {
+        font-size: 1.05rem;
+    }
+
+    .menu-link,
+    .menu-trigger {
+        min-height: 40px;
+        font-size: 0.74rem;
+        padding: 9px 10px;
+    }
+
+    .action-icon {
+        font-size: 1.2rem;
     }
 
     .mega-menu-content {

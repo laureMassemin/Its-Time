@@ -1,7 +1,12 @@
 <template>
     <div class="product-list-container">
         <div class="mb-2xl text-center">
-            <div class="section-title">{{ props.title }}</div>
+            <div class="section-title">{{ formattedTitle }}</div>
+            <SearchBar
+                v-model="searchQuery"
+                class="mt-md"
+                placeholder="Rechercher par nom, marque, type ou tag"
+            />
         </div>
 
         <div v-if="productStore.loading" class="loading">Chargement des produits...</div>
@@ -27,7 +32,9 @@
 <script setup>
 import { ref, onMounted, computed, watch } from 'vue';
 import { useProductStore } from '../stores/products';
+import { formatProductType } from '../utils/formatters';
 import FiltersSection from './Filters/FiltersSection.vue';
+import SearchBar from './Filters/SearchBar.vue';
 import ProductGrid from './ProductGrid.vue';
 
 const productStore = useProductStore();
@@ -40,9 +47,15 @@ const props = defineProps({
 });
 
 const filtersRef = ref(null);
+const searchQuery = ref('');
 const currentFilters = ref({
     selectedFilters: {},
     priceRange: { min: 0, max: 10000 }
+});
+
+const formattedTitle = computed(() => {
+
+    return formatProductType(props.title);
 });
 
 const baseProducts = computed(() => {
@@ -96,6 +109,23 @@ const filteredProducts = computed(() => {
         return price >= min && price <= max;
     });
 
+    const normalizedSearch = searchQuery.value.trim().toLowerCase();
+    if (normalizedSearch) {
+        filtered = filtered.filter(product => {
+            const haystack = [
+                product.name,
+                product.brand,
+                product.product_type,
+                ...(Array.isArray(product.tag_list) ? product.tag_list : [])
+            ]
+                .filter(Boolean)
+                .join(' ')
+                .toLowerCase();
+
+            return haystack.includes(normalizedSearch);
+        });
+    }
+
     return filtered;
 });
 
@@ -107,6 +137,7 @@ const removeProduct = (product) => {
 };
 
 watch(() => [props.filterKey, props.filterValue], () => {
+    searchQuery.value = '';
     if (filtersRef.value) {
         filtersRef.value.resetAllFilters();
     }

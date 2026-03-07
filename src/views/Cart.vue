@@ -4,7 +4,7 @@
         
         <div v-if="cartStore.items.length === 0" class="empty-state">
             <p style="font-size: 1.2rem; margin-bottom: 20px;">Votre panier est vide</p>
-            <RouterLink to="/" class="btn btn-primary">Continuer les achats</RouterLink>
+            <RouterLink to="/produits" class="btn btn-primary">Continuer les achats</RouterLink>
         </div>
         
         <div v-else class="cart-content flex flex-gap-lg">
