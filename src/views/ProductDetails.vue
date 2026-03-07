@@ -94,16 +94,33 @@
                 </div>
             </div>
         </div>
+
+        <RecommendedProducts
+            v-if="product"
+            :title="`Plus de produits de ${product.brand}`"
+            :products="relatedProductsByBrand"
+            :view-all-link="`/marque/${product.brand}`"
+            :view-all-text="`Voir tous les produits de ${product.brand}`"
+        />
+
+        <RecommendedProducts
+            v-if="product"
+            :title="`Plus de ${formatProductType(product.product_type)}`"
+            :products="relatedProductsByType"
+            :view-all-link="`/type/${product.product_type}`"
+            :view-all-text="`Voir tous les ${formatProductType(product.product_type)}`"
+        />
     </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { useCartStore } from '../stores/cart';
 import { useFavoritesStore } from '../stores/favorites';
 import { useProductStore } from '../stores/products';
 import { formatProductType } from '../utils/formatters';
+import RecommendedProducts from '../Components/RecommendedProducts.vue';
 
 const route = useRoute();
 const cartStore = useCartStore();
@@ -114,6 +131,27 @@ const product = ref(null);
 const selectedColor = ref(null);
 const addedMessage = ref(false);
 const favoriteMessage = ref(false);
+
+const relatedProductsByBrand = computed(() => {
+    if (!product.value || !product.value.brand) {
+        return [];
+    }
+    
+    return productStore.products
+        .filter(p => p.brand === product.value.brand && p.id !== product.value.id)
+        .slice(0, 4);
+});
+
+
+const relatedProductsByType = computed(() => {
+    if (!product.value || !product.value.product_type) {
+        return [];
+    }
+    
+    return productStore.products
+        .filter(p => p.product_type === product.value.product_type && p.id !== product.value.id)
+        .slice(0, 4);
+});
 
 const getProduct = async () => {
     await productStore.loadProducts();
