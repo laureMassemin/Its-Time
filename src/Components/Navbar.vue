@@ -18,7 +18,7 @@
                                         class="mega-menu-item"
                                         @click="openMenus.brands = false"
                                     >
-                                        {{ brand }}
+                                        {{ formatProductType(brand) }}
                                     </RouterLink>
                                 </div>
                             </div>
@@ -45,7 +45,7 @@
                                         class="mega-menu-item"
                                         @click="openMenus.types = false"
                                     >
-                                        {{ type }}
+                                        {{ formatProductType(type) }}
                                     </RouterLink>
                                 </div>
                             </div>
@@ -80,6 +80,7 @@ import { RouterLink } from 'vue-router';
 import { useCartStore } from '../stores/cart';
 import { useFavoritesStore } from '../stores/favorites';
 import { useProductStore } from '../stores/products';
+import { formatProductType } from '../utils/formatters';
 
 const cartStore = useCartStore();
 const favoritesStore = useFavoritesStore();

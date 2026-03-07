@@ -13,7 +13,7 @@
                     type="checkbox" 
                     :value="option"
                     v-model="selectedValues">
-                <span>{{ option }}</span>
+                <span>{{ formatOption(option) }}</span>
             </label>
         </div>
     </div>
@@ -21,6 +21,7 @@
 
 <script setup>
 import { ref, computed } from 'vue';
+import { formatProductType } from '../../utils/formatters';
 
 const props = defineProps({
     label: String,
@@ -39,6 +40,15 @@ const selectedValues = computed({
 
 const toggleExpanded = () => {
     isExpanded.value = !isExpanded.value;
+};
+
+const formatOption = (option) => {
+    // Si l'option contient un underscore, on utilise le formatage
+    if (option && option.includes('_')) {
+        return formatProductType(option);
+    }
+    // Sinon on retourne l'option telle quelle
+    return option;
 };
 </script>
 

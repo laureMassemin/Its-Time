@@ -13,7 +13,7 @@
                 :to="`/type/${type}`"
                 class="category-card"
             >
-                <div class="category-name">{{ type }}</div>
+                <div class="category-name">{{ formatProductType(type) }}</div>
             </RouterLink>
         </div>
     </div>
@@ -23,6 +23,7 @@
 import { onMounted } from 'vue';
 import { RouterLink } from 'vue-router';
 import { useProductStore } from '../stores/products';
+import { formatProductType } from '../utils/formatters';
 
 const productStore = useProductStore();
 

@@ -41,7 +41,7 @@
                 
                 <div class="product-details-list">
                     <div class="detail-item" v-if="product.product_type">
-                        <strong>Type:</strong> {{ product.product_type }}
+                        <strong>Type:</strong> {{ formatProductType(product.product_type) }}
                     </div>
                     <div class="detail-item" v-if="product.category">
                         <strong>Catégorie:</strong> {{ product.category }}
@@ -103,6 +103,7 @@ import { useRoute } from 'vue-router';
 import { useCartStore } from '../stores/cart';
 import { useFavoritesStore } from '../stores/favorites';
 import { useProductStore } from '../stores/products';
+import { formatProductType } from '../utils/formatters';
 
 const route = useRoute();
 const cartStore = useCartStore();
