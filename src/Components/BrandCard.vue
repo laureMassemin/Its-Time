@@ -1,19 +1,18 @@
 <template>
     <RouterLink 
         :to="`/marque/${brand}`"
-        class="brand-card"
+        class="catalog-card card card-unified card-padding link"
         @click="scrollToTop"
     >
-        <div class="brand-image-container">
+        <div class="catalog-card-media">
             <img 
                 :src="brandImage" 
                 :alt="brand"
                 @error="handleImageError"
-                class="brand-image"
             />
         </div>
-        <div class="brand-name">{{ brand }}</div>
-        <div v-if="showCount" class="brand-count">{{ productCount }} produits</div>
+        <div class="catalog-card-title" style="text-transform: capitalize;">{{ brand }}</div>
+        <div v-if="showCount" class="catalog-card-subtitle">{{ productCount }} produits</div>
     </RouterLink>
 </template>
 
@@ -70,50 +69,4 @@ const scrollToTop = () => {
 };
 </script>
 
-<style scoped>
-.brand-card {
-    background: white;
-    padding: 30px;
-    text-align: center;
-    border-radius: 8px;
-    text-decoration: none;
-    transition: all 0.3s ease;
-    border: 1px solid #e0e0e0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
-}
 
-.brand-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-}
-
-.brand-image-container {
-    width: 80px;
-    height: 80px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 8px;
-}
-
-.brand-image {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-}
-
-.brand-name {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #333;
-    text-transform: capitalize;
-}
-
-.brand-count {
-    font-size: 0.85rem;
-    color: #666;
-}
-</style>

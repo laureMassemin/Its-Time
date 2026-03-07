@@ -1,89 +1,95 @@
 <template>
-    <RouterLink :to="`/produit/${data.id}`" class="product-card">
-        <div class="image-container">
-            <img :src="data.api_featured_image" @error="$emit('image-error')" alt="Product">
-        </div>
-        <div class="info">
-            <div class="brand">{{ data.brand }}</div>
-            <div class="name">{{ data.name }}</div>
-            <div class="price">{{ data.price }} {{ data.price_sign }}</div>
-        </div>
-    </RouterLink>
+    <div class="product-card-wrapper">
+        <button
+            class="favorite-toggle"
+            :aria-label="isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'"
+            :title="isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'"
+            @click.stop="toggleFavorite"
+        >
+            {{ isFavorite ? '✕' : '♡' }}
+        </button>
 
+        <RouterLink :to="`/produit/${data.id}`" class="product-card link transition-fast hover-scale">
+            <div class="img-container">
+                <img :src="data.api_featured_image" @error="$emit('image-error')" alt="Product" class="img-responsive">
+            </div>
+            <div class="info flex-column flex-gap-sm">
+                <div class="brand-text">{{ data.brand }}</div>
+                <div class="product-name">{{ data.name }}</div>
+                <div class="price-text">{{ data.price }} {{ data.price_sign }}</div>
+            </div>
+        </RouterLink>
+    </div>
 </template>
 
 <script setup>
+import { computed } from 'vue';
 import { RouterLink } from 'vue-router';
+import { useFavoritesStore } from '../stores/favorites';
 
-    const props = defineProps({
-        data: JSON
-    });
-    
-    defineEmits(['image-error']);
+const props = defineProps({
+    data: JSON
+});
 
+defineEmits(['image-error']);
+
+const favoritesStore = useFavoritesStore();
+
+const isFavorite = computed(() => favoritesStore.isFavorite(props.data.id));
+
+const toggleFavorite = () => {
+    favoritesStore.toggleFavorite(props.data);
+};
 </script>
 
 <style scoped>
+.product-card-wrapper {
+    position: relative;
+}
+
 .product-card {
     overflow: hidden;
     background: white;
-    transition: transform 0.2s;
     cursor: pointer;
-    font-family: 'Montserrat', sans-serif;
-    text-decoration: none;
     display: block;
 }
 
-.product-card:hover {
-    transform: scale(1.02);
+.favorite-toggle {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 30px;
+    height: 30px;
+    border: 1px solid var(--border-color);
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.95);
+    color: var(--text-secondary);
+    cursor: pointer;
+    z-index: 2;
+    font-size: 1rem;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-fast);
 }
 
-.image-container {
-    width: 100%;
-    aspect-ratio: 1;
-    overflow: hidden;
-    background: #fafafa;
-}
-
-.image-container img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+.favorite-toggle:hover {
+    border-color: var(--color-black);
+    color: var(--color-black);
 }
 
 .info {
     padding: 8px 4px;
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
 }
 
-.brand {
-    font-size: 0.75rem;
-    color: #999;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    font-weight: 500;
-}
-
-.name {
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: #333;
-    line-height: 1.3;
+.product-name {
     overflow: hidden;
     text-overflow: ellipsis;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     line-clamp: 2;
     -webkit-box-orient: vertical;
-}
-
-.price {
-    font-size: 1rem;
-    font-weight: 700;
-    color: #000;
-    margin-top: 4px;
 }
 </style>
 

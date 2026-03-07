@@ -1,16 +1,14 @@
 <template>
-    <div class="container">
-        <div class="presentation">
-            <div class="title">{{ props.title }}</div>
+    <div class="product-list-container">
+        <div class="mb-2xl text-center">
+            <div class="section-title">{{ props.title }}</div>
         </div>
 
-        <div v-if="productStore.loading">
-            <div class="loading">Chargement des produits...</div>
-        </div>
+        <div v-if="productStore.loading" class="loading">Chargement des produits...</div>
         <div v-else-if="productStore.error" class="error">
             {{ productStore.error }}
         </div>
-        <div v-else class="content">
+        <div v-else class="content flex flex-gap-xl">
             <FiltersSection 
                 :products="baseProducts"
                 @update-filters="handleFiltersUpdate"
@@ -120,69 +118,22 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.container {
+.product-list-container {
     margin: auto;
-    padding: 20px;
+    padding: var(--spacing-lg);
     max-width: 1600px;
     display: flex;
     flex-direction: column;
-    gap: 30px;
-    font-family: 'Montserrat', sans-serif;
-}
-
-.presentation {
-    text-align: center;
-    padding: 20px 0;
-}
-
-.presentation .title {
-    font-size: 2.5rem;
-    font-weight: 700;
-    color: #2c3e50;
-    margin-bottom: 10px;
-    letter-spacing: -0.5px;
-}
-
-.loading,
-.error {
-    text-align: center;
-    padding: 40px 20px;
-    font-size: 1.1rem;
-    color: #666;
-}
-
-.error {
-    color: #d32f2f;
+    gap: var(--spacing-xl);
 }
 
 .content {
-    display: flex;
-    flex-direction: row;
-    gap: 40px;
     align-items: flex-start;
 }
 
-/* Responsive */
 @media (max-width: 1024px) {
     .content {
         flex-direction: column;
-        gap: 30px;
-    }
-}
-
-@media (max-width: 768px) {
-    .presentation .title {
-        font-size: 2rem;
-    }
-}
-
-@media (max-width: 480px) {
-    .container {
-        padding: 15px;
-    }
-
-    .presentation .title {
-        font-size: 1.75rem;
     }
 }
 </style>

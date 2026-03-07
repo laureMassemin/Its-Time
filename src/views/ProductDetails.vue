@@ -1,39 +1,32 @@
 <template>
-    <div class="product-details-container">
+    <div class="product-details-container container-sm">
         <div v-if="productStore.loading" class="loading">Chargement...</div>
         <div v-else-if="productStore.error" class="error">{{ productStore.error }}</div>
-        <div v-else-if="product" class="product-details">
+        <div v-else-if="product" class="product-details flex flex-gap-lg">
             <div class="product-image">
-                <img :src="product.api_featured_image" :alt="product.name" @error="handleImageError">
+                <img :src="product.api_featured_image" :alt="product.name" @error="handleImageError" class="img-responsive">
             </div>
             
-            <div class="product-info">
-                <div class="brand-header">
-                    <img 
-                        :src="brandImage" 
-                        :alt="product.brand"
-                        @error="handleBrandImageError"
-                        class="brand-logo"
-                    />
-                    <div class="brand">{{ product.brand }}</div>
-                </div>
-                <h1 class="name">{{ product.name }}</h1>
-                <div class="price-container">
-                    <div class="price">{{ product.price }} {{ product.price_sign }}</div>
-                    <div class="currency" v-if="product.currency">{{ product.currency }}</div>
+            <div class="product-info flex-column flex-gap-lg">
+                <div class="brand-text">{{ product.brand }}</div>
+                
+                <h1 style="font-size: 2rem; font-weight: 600; line-height: 1.3; margin: 0; color: var(--text-secondary);">{{ product.name }}</h1>
+                <div class="flex flex-gap-md">
+                    <div class="price-text-large">{{ product.price }} {{ product.price_sign }}</div>
+                    <div class="text-muted" style="font-size: 0.9rem;" v-if="product.currency">{{ product.currency }}</div>
                 </div>
                 
-                <div class="rating" v-if="product.rating">
+                <div class="text-muted" style="font-size: 0.95rem; padding: 8px 0;" v-if="product.rating">
                     <strong>Note:</strong> {{ product.rating }} / 5
                 </div>
                 
-                <div class="description" v-if="product.description">
-                    <h2>Description</h2>
-                    <p>{{ product.description }}</p>
+                <div class="mt-lg" v-if="product.description">
+                    <h2 class="subsection-title">Description</h2>
+                    <p class="text-muted" style="font-size: 0.95rem; line-height: 1.6;">{{ product.description }}</p>
                 </div>
                 
-                <div class="colors" v-if="product.product_colors && product.product_colors.length > 0">
-                    <h2>Couleurs disponibles ({{ product.product_colors.length }})</h2>
+                <div class="mt-lg" v-if="product.product_colors && product.product_colors.length > 0">
+                    <h2 class="subsection-title">Couleurs disponibles ({{ product.product_colors.length }})</h2>
                     <div class="colors-grid">
                         <div 
                             v-for="color in product.product_colors" 
@@ -47,61 +40,61 @@
                     </div>
                 </div>
                 
-                <div class="product-details-list">
-                    <div class="detail-item detail-item-with-icon" v-if="product.product_type">
+                <div class="flex-column flex-gap-sm">
+                    <div class="flex flex-gap-md text-muted" style="font-size: 0.9rem;" v-if="product.product_type">
                         <img 
                             :src="typeImage" 
                             :alt="formatProductType(product.product_type)"
                             @error="handleTypeImageError"
-                            class="type-icon-small"
+                            class="img-icon-sm"
                         />
-                        <span><strong>Type:</strong> {{ formatProductType(product.product_type) }}</span>
+                        <span><strong style="color: var(--text-secondary);">Type:</strong> {{ formatProductType(product.product_type) }}</span>
                     </div>
-                    <div class="detail-item" v-if="product.id">
-                        <strong>ID:</strong> {{ product.id }}
+                    <div class="text-muted" style="font-size: 0.9rem;" v-if="product.id">
+                        <strong style="color: var(--text-secondary);">ID:</strong> {{ product.id }}
                     </div>
                 </div>
                 
-                <div class="tags" v-if="product.tag_list && product.tag_list.length > 0">
+                <div class="flex flex-wrap flex-gap-sm mt-md" v-if="product.tag_list && product.tag_list.length > 0">
                     <span v-for="tag in product.tag_list" :key="tag" class="tag">{{ tag }}</span>
                 </div>
                 
-                <div class="links">
-                    <a v-if="product.product_link" :href="product.product_link" target="_blank" class="external-link">
+                <div class="flex-column flex-gap-md mt-lg">
+                    <a v-if="product.product_link" :href="product.product_link" target="_blank" class="link-underline">
                         Voir sur le site officiel
                     </a>
-                    <a v-if="product.website_link" :href="product.website_link" target="_blank" class="external-link">
+                    <a v-if="product.website_link" :href="product.website_link" target="_blank" class="link-underline">
                         Site de la marque
                     </a>
                 </div>
                 
-                <div class="add-to-cart-section">
-                    <div v-if="product.product_colors && product.product_colors.length > 0 && !selectedColor" class="color-warning">
+                <div class="flex-column flex-gap-md mt-lg">
+                    <div v-if="product.product_colors && product.product_colors.length > 0 && !selectedColor" class="warning-message">
                         Veuillez sélectionner une couleur
                     </div>
-                    <div class="actions-row">
+                    <div class="flex flex-gap-md flex-wrap">
                         <button
-                            class="add-to-cart-btn"
+                            class="btn btn-primary"
                             @click="handleAddToCart"
                             :disabled="product.product_colors && product.product_colors.length > 0 && !selectedColor"
                         >
                             Ajouter au panier
                         </button>
                         <button
-                            class="add-to-favorites-btn"
+                            class="btn btn-outline"
                             @click="handleAddToFavorites"
                             :disabled="product.product_colors && product.product_colors.length > 0 && !selectedColor"
                         >
                             {{ isCurrentSelectionFavorite() ? 'Retirer des favoris' : 'Ajouter aux favoris' }}
                         </button>
                     </div>
-                    <div v-if="addedMessage" class="added-message">✓ Ajouté au panier</div>
-                    <div v-if="favoriteMessage" class="favorite-message">✓ Favoris mis à jour</div>
+                    <div v-if="addedMessage" class="success-message">✓ Ajouté au panier</div>
+                    <div v-if="favoriteMessage" class="success-message">✓ Favoris mis à jour</div>
                 </div>
                 
-                <div class="meta-info">
-                    <div v-if="product.created_at" class="meta-item">Ajouté le {{ formatDate(product.created_at) }}</div>
-                    <div v-if="product.updated_at" class="meta-item">Mis à jour le {{ formatDate(product.updated_at) }}</div>
+                <div class="border-top pt-lg mt-xl flex-column flex-gap-sm">
+                    <div class="text-light" style="font-size: 0.75rem;" v-if="product.created_at">Ajouté le {{ formatDate(product.created_at) }}</div>
+                    <div class="text-light" style="font-size: 0.75rem;" v-if="product.updated_at">Mis à jour le {{ formatDate(product.updated_at) }}</div>
                 </div>
             </div>
         </div>
@@ -125,7 +118,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useCartStore } from '../stores/cart';
 import { useFavoritesStore } from '../stores/favorites';
@@ -255,36 +248,22 @@ const formatDate = (dateString) => {
 onMounted(() => {
     getProduct();
 });
+
+// Watch for route changes to reload product when switching between details pages
+watch(() => route.params.id, () => {
+    selectedColor.value = null; // Reset color selection
+    getProduct();
+});
 </script>
 
 <style scoped>
-.product-details-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 40px 20px;
-    font-family: 'Montserrat', sans-serif;
-}
-
-.loading, .error {
-    text-align: center;
-    padding: 60px 20px;
-    font-size: 1.1rem;
-    color: #666;
-}
-
-.error {
-    color: #e74c3c;
-}
-
 .product-details {
-    display: flex;
-    gap: 60px;
     align-items: flex-start;
 }
 
 .product-image {
     flex: 0 0 500px;
-    background: #fafafa;
+    background: var(--bg-lighter);
     position: sticky;
     top: 80px;
     align-self: flex-start;
@@ -292,107 +271,14 @@ onMounted(() => {
     overflow: hidden;
 }
 
-.product-image img {
-    width: 100%;
-    height: auto;
-    display: block;
-}
-
 .product-info {
     flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
-
-.brand-header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.brand-logo {
-    width: 40px;
-    height: 40px;
-    object-fit: contain;
-}
-
-.brand {
-    font-size: 0.9rem;
-    color: #999;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    font-weight: 500;
-}
-
-.name {
-    font-size: 2rem;
-    font-weight: 600;
-    color: #333;
-    line-height: 1.3;
-    margin: 0;
-}
-
-.price-container {
-    display: flex;
-    align-items: baseline;
-    gap: 10px;
-}
-
-.price {
-    font-size: 1.8rem;
-    font-weight: 700;
-    color: #000;
-}
-
-.currency {
-    font-size: 0.9rem;
-    color: #666;
-    font-weight: 400;
-}
-
-.rating {
-    font-size: 0.95rem;
-    color: #666;
-    padding: 8px 0;
-}
-
-.description {
-    margin-top: 20px;
-}
-
-.description h2 {
-    font-size: 1rem;
-    font-weight: 600;
-    color: #333;
-    margin-bottom: 10px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.description p {
-    font-size: 0.95rem;
-    color: #666;
-    line-height: 1.6;
-}
-
-.colors {
-    margin-top: 20px;
-}
-
-.colors h2 {
-    font-size: 1rem;
-    font-weight: 600;
-    color: #333;
-    margin-bottom: 15px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
 }
 
 .colors-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-    gap: 8px;
+    gap: var(--spacing-sm);
 }
 
 .color-item {
@@ -403,193 +289,23 @@ onMounted(() => {
     cursor: pointer;
     padding: 4px;
     border: 2px solid transparent;
-    transition: all 0.2s ease;
+    transition: all var(--transition-fast);
 }
 
 .color-item:hover {
-    border-color: #ddd;
+    border-color: var(--border-color-light);
 }
 
 .color-item.selected {
-    border-color: #000;
-    background-color: #fafafa;
-}
-
-.color-swatch {
-    width: 40px;
-    height: 40px;
-    border: 1px solid #e0e0e0;
-    cursor: pointer;
-    transition: transform 0.2s ease;
-}
-
-.color-swatch:hover {
-    transform: scale(1.1);
+    border-color: var(--color-black);
+    background-color: var(--bg-lighter);
 }
 
 .color-name {
     font-size: 0.7rem;
-    color: #666;
+    color: var(--text-muted);
     text-align: center;
     line-height: 1.2;
-}
-
-.product-details-list {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin: 10px 0;
-}
-
-.detail-item {
-    font-size: 0.9rem;
-    color: #666;
-}
-
-.detail-item strong {
-    color: #333;
-    margin-right: 5px;
-}
-
-.detail-item-with-icon {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.type-icon-small {
-    width: 28px;
-    height: 28px;
-    object-fit: contain;
-}
-
-.tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 10px;
-}
-
-.tag {
-    padding: 4px 12px;
-    background: #f5f5f5;
-    color: #666;
-    font-size: 0.8rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.links {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin: 20px 0;
-}
-
-.external-link {
-    font-size: 0.9rem;
-    color: #333;
-    text-decoration: underline;
-    transition: color 0.2s ease;
-}
-
-.external-link:hover {
-    color: #000;
-}
-
-.add-to-cart-section {
-    margin-top: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.actions-row {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-}
-
-.color-warning {
-    font-size: 0.85rem;
-    color: #e74c3c;
-    font-style: italic;
-}
-
-.add-to-cart-btn {
-    padding: 16px 32px;
-    background-color: #000;
-    color: white;
-    border: none;
-    font-size: 0.9rem;
-    font-weight: 500;
-    cursor: pointer;
-    font-family: 'Montserrat', sans-serif;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    transition: background-color 0.2s ease;
-    width: fit-content;
-}
-
-.add-to-favorites-btn {
-    padding: 16px 24px;
-    background-color: transparent;
-    color: #000;
-    border: 1px solid #000;
-    font-size: 0.9rem;
-    font-weight: 500;
-    cursor: pointer;
-    font-family: 'Montserrat', sans-serif;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    transition: background-color 0.2s ease, color 0.2s ease;
-    width: fit-content;
-}
-
-.add-to-cart-btn:hover:not(:disabled) {
-    background-color: #333;
-}
-
-.add-to-cart-btn:disabled {
-    background-color: #ccc;
-    cursor: not-allowed;
-}
-
-.add-to-favorites-btn:hover:not(:disabled) {
-    background-color: #000;
-    color: #fff;
-}
-
-.add-to-favorites-btn:disabled {
-    border-color: #ccc;
-    color: #999;
-    cursor: not-allowed;
-}
-
-.added-message {
-    font-size: 0.9rem;
-    color: #27ae60;
-    font-weight: 500;
-}
-
-.favorite-message {
-    font-size: 0.9rem;
-    color: #27ae60;
-    font-weight: 500;
-}
-
-.meta-info {
-    margin-top: 30px;
-    padding-top: 20px;
-    border-top: 1px solid #e0e0e0;
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-}
-
-.meta-item {
-    font-size: 0.75rem;
-    color: #999;
 }
 
 @media (max-width: 768px) {
@@ -601,14 +317,6 @@ onMounted(() => {
     .product-image {
         flex: 1 1 auto;
         width: 100%;
-    }
-    
-    .name {
-        font-size: 1.5rem;
-    }
-    
-    .price {
-        font-size: 1.4rem;
     }
 }
 </style>

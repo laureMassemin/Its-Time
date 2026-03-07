@@ -1,8 +1,8 @@
 <template>
-    <div class="favorites-page">
-        <div class="header">
-            <h1>Mes favoris</h1>
-            <button v-if="favoritesStore.totalItems > 0" class="clear-btn" @click="favoritesStore.clearFavorites()">
+    <div class="favorites-page container-sm">
+        <div class="flex-between mb-lg">
+            <h1 class="page-title">Mes favoris</h1>
+            <button v-if="favoritesStore.totalItems > 0" class="btn btn-outline btn-sm" @click="favoritesStore.clearFavorites()">
                 Vider les favoris
             </button>
         </div>
@@ -12,23 +12,33 @@
         </div>
 
         <div v-else class="favorites-grid">
-            <div v-for="(item, index) in favoritesStore.items" :key="`${item.id}-${item.selectedColor?.hex_value || 'default'}`" class="favorite-card">
-                <RouterLink :to="`/produit/${item.id}`" class="card-link">
-                    <div class="image-wrap">
-                        <img :src="item.image" :alt="item.name" />
+            <div 
+                v-for="(item, index) in favoritesStore.items" 
+                :key="`${item.id}-${item.selectedColor?.hex_value || 'default'}`"
+                class="favorite-card-wrapper"
+            >
+                <RouterLink 
+                    :to="`/produit/${item.id}`" 
+                    class="favorite-card link transition-fast hover-scale"
+                >
+                    <div class="img-container">
+                        <img :src="item.image" :alt="item.name" class="img-responsive" />
                     </div>
-                    <div class="card-info">
-                        <div class="brand">{{ item.brand || 'Marque inconnue' }}</div>
-                        <div class="name">{{ item.name }}</div>
-                        <div class="price">{{ item.price }} {{ item.priceSign }}</div>
-                        <div v-if="item.selectedColor" class="color">
+                    <div class="info flex-column flex-gap-sm">
+                        <div class="brand-text">{{ item.brand || 'Marque inconnue' }}</div>
+                        <div class="product-name">{{ item.name }}</div>
+                        <div class="price-text">{{ item.price }} {{ item.priceSign }}</div>
+                        <div v-if="item.selectedColor" class="text-muted" style="font-size: 0.8rem;">
                             Couleur: {{ item.selectedColor.colour_name || item.selectedColor.hex_value }}
                         </div>
                     </div>
                 </RouterLink>
-
-                <button class="remove-btn" @click="favoritesStore.removeFromFavorites(index)">
-                    Retirer
+                <button 
+                    @click="favoritesStore.removeFromFavorites(index)" 
+                    class="remove-favorite-btn"
+                    title="Retirer des favoris"
+                >
+                    ✕
                 </button>
             </div>
         </div>
@@ -43,112 +53,66 @@ const favoritesStore = useFavoritesStore();
 </script>
 
 <style scoped>
-.favorites-page {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 30px 20px 50px;
-    font-family: 'Montserrat', sans-serif;
-}
-
-.header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 24px;
-}
-
-.header h1 {
+.favorites-page h1 {
     margin: 0;
     font-size: 1.8rem;
-    color: #333;
 }
 
-.clear-btn,
-.remove-btn {
-    background: transparent;
-    border: 1px solid #ddd;
-    color: #333;
-    padding: 8px 14px;
-    font-family: 'Montserrat', sans-serif;
-    font-size: 0.85rem;
-    cursor: pointer;
-}
-
-.clear-btn:hover,
-.remove-btn:hover {
-    border-color: #000;
-    color: #000;
-}
-
-.empty-state {
-    color: #777;
-    font-size: 0.95rem;
-    padding: 10px 0;
-}
-
-.favorites-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 18px;
+.favorite-card-wrapper {
+    position: relative;
 }
 
 .favorite-card {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.card-link {
-    text-decoration: none;
-    color: inherit;
-}
-
-.image-wrap {
-    width: 100%;
-    aspect-ratio: 1;
-    background: #fafafa;
     overflow: hidden;
+    background: white;
+    cursor: pointer;
+    display: block;
+    transition: transform var(--transition-fast);
 }
 
-.image-wrap img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+.favorite-card:hover {
+    transform: translateY(-4px);
 }
 
-.card-info {
+.info {
+    padding: 8px 4px;
+}
+
+.product-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.remove-favorite-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.2rem;
     display: flex;
-    flex-direction: column;
-    gap: 4px;
-    margin-top: 8px;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition-fast);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.brand {
-    font-size: 0.75rem;
-    color: #999;
-    text-transform: uppercase;
-}
-
-.name {
-    font-size: 0.9rem;
-    color: #333;
-    line-height: 1.3;
-}
-
-.price {
-    font-size: 1rem;
-    color: #000;
-    font-weight: 600;
-}
-
-.color {
-    font-size: 0.8rem;
-    color: #666;
+.remove-favorite-btn:hover {
+    background: var(--color-error);
+    color: white;
+    transform: scale(1.1);
 }
 
 @media (max-width: 768px) {
-    .header {
+    .flex-between {
         flex-direction: column;
         align-items: flex-start;
     }

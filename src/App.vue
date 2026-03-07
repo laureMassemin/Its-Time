@@ -17,4 +17,4 @@ onMounted(() => {
   <Footer></Footer>
 </template>
 
-<style scoped></style>
+
