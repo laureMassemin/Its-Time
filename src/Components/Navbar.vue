@@ -4,6 +4,8 @@
             <RouterLink to="/" class="navbar-brand">Its-Time</RouterLink>
 
             <div class="navbar-menu">
+                <RouterLink to="/produits" class="menu-link">Produits</RouterLink>
+                
                 <div class="menu-item">
                     <button class="menu-trigger" @click="toggleSubmenu('brands')">
                         <span>Marques</span>
@@ -18,7 +20,13 @@
                                         class="mega-menu-item"
                                         @click="openMenus.brands = false"
                                     >
-                                        {{ formatProductType(brand) }}
+                                        <img 
+                                            :src="getBrandImage(brand)" 
+                                            :alt="brand"
+                                            class="menu-icon"
+                                            @error="(e) => handleBrandImageError(e, brand)"
+                                        />
+                                        <span>{{ formatProductType(brand) }}</span>
                                     </RouterLink>
                                 </div>
                             </div>
@@ -45,7 +53,13 @@
                                         class="mega-menu-item"
                                         @click="openMenus.types = false"
                                     >
-                                        {{ formatProductType(type) }}
+                                        <img 
+                                            :src="getTypeImage(type)" 
+                                            :alt="type"
+                                            class="menu-icon"
+                                            @error="(e) => handleTypeImageError(e, type)"
+                                        />
+                                        <span>{{ formatProductType(type) }}</span>
                                     </RouterLink>
                                 </div>
                             </div>
@@ -93,6 +107,34 @@ const openMenus = ref({
 
 const toggleSubmenu = (menu) => {
     openMenus.value[menu] = !openMenus.value[menu];
+};
+
+const getBrandImage = (brand) => {
+    const brandSlug = brand.toLowerCase().replace(/\s+/g, '-');
+    return `/assets/brands/${brandSlug}.png`;
+};
+
+const getTypeImage = (type) => {
+    return `/assets/types/${type}.png`;
+};
+
+const handleBrandImageError = (event, brand) => {
+    const brandSlug = brand.toLowerCase().replace(/\s+/g, '-');
+    const target = event.target;
+    if (target.src.endsWith('.png')) {
+        target.src = `/assets/brands/${brandSlug}.jpg`;
+    } else {
+        target.src = '/assets/brands/default.png';
+    }
+};
+
+const handleTypeImageError = (event, type) => {
+    const target = event.target;
+    if (target.src.endsWith('.png')) {
+        target.src = `/assets/types/${type}.jpg`;
+    } else {
+        target.src = '/assets/types/default.png';
+    }
 };
 
 const brandsColumns = computed(() => {
@@ -164,6 +206,25 @@ onMounted(() => {
     display: flex;
     gap: 48px;
     flex: 1;
+    align-items: center;
+}
+
+.menu-link {
+    display: flex;
+    align-items: center;
+    padding: 8px 2px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    color: #1a1a1a;
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: color 0.3s ease;
+    height: 72px;
+}
+
+.menu-link:hover {
+    color: #d4364f;
 }
 
 .menu-item {
@@ -269,7 +330,9 @@ onMounted(() => {
 }
 
 .mega-menu-item {
-    display: block;
+    display: flex;
+    align-items: center;
+    gap: 10px;
     color: #666;
     text-decoration: none;
     font-size: 0.8rem;
@@ -277,6 +340,13 @@ onMounted(() => {
     letter-spacing: 0.1px;
     transition: color 0.2s ease, padding-left 0.2s ease;
     padding-left: 0;
+}
+
+.menu-icon {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+    flex-shrink: 0;
 }
 
 .mega-menu-item:hover {

@@ -13,6 +13,7 @@
                     <h4 class="footer-heading">Navigation</h4>
                     <ul class="footer-links">
                         <li><RouterLink to="/" @click="scrollToTop">Accueil</RouterLink></li>
+                        <li><RouterLink to="/produits" @click="scrollToTop">Tous les produits</RouterLink></li>
                         <li><RouterLink to="/marques" @click="scrollToTop">Toutes les marques</RouterLink></li>
                         <li><RouterLink to="/categories" @click="scrollToTop">Toutes les catégories</RouterLink></li>
                         <li><RouterLink to="/favoris" @click="scrollToTop">Mes favoris</RouterLink></li>

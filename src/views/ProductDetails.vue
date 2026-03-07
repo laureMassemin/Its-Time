@@ -8,7 +8,15 @@
             </div>
             
             <div class="product-info">
-                <div class="brand">{{ product.brand }}</div>
+                <div class="brand-header">
+                    <img 
+                        :src="brandImage" 
+                        :alt="product.brand"
+                        @error="handleBrandImageError"
+                        class="brand-logo"
+                    />
+                    <div class="brand">{{ product.brand }}</div>
+                </div>
                 <h1 class="name">{{ product.name }}</h1>
                 <div class="price-container">
                     <div class="price">{{ product.price }} {{ product.price_sign }}</div>
@@ -40,11 +48,14 @@
                 </div>
                 
                 <div class="product-details-list">
-                    <div class="detail-item" v-if="product.product_type">
-                        <strong>Type:</strong> {{ formatProductType(product.product_type) }}
-                    </div>
-                    <div class="detail-item" v-if="product.category">
-                        <strong>Catégorie:</strong> {{ product.category }}
+                    <div class="detail-item detail-item-with-icon" v-if="product.product_type">
+                        <img 
+                            :src="typeImage" 
+                            :alt="formatProductType(product.product_type)"
+                            @error="handleTypeImageError"
+                            class="type-icon-small"
+                        />
+                        <span><strong>Type:</strong> {{ formatProductType(product.product_type) }}</span>
                     </div>
                     <div class="detail-item" v-if="product.id">
                         <strong>ID:</strong> {{ product.id }}
@@ -131,6 +142,19 @@ const product = ref(null);
 const selectedColor = ref(null);
 const addedMessage = ref(false);
 const favoriteMessage = ref(false);
+const brandImageError = ref(false);
+const typeImageError = ref(false);
+
+const brandImage = computed(() => {
+    if (!product.value || brandImageError.value) return '/assets/brands/default.png';
+    const brandSlug = product.value.brand.toLowerCase().replace(/\s+/g, '-');
+    return `/assets/brands/${brandSlug}.png`;
+});
+
+const typeImage = computed(() => {
+    if (!product.value || typeImageError.value) return '/assets/types/default.png';
+    return `/assets/types/${product.value.product_type}.png`;
+});
 
 const relatedProductsByBrand = computed(() => {
     if (!product.value || !product.value.brand) {
@@ -166,6 +190,27 @@ const getProduct = async () => {
 
 const handleImageError = (e) => {
     e.target.src = 'https://via.placeholder.com/400x400?text=Image+non+disponible';
+};
+
+const handleBrandImageError = (e) => {
+    if (!brandImageError.value) {
+        brandImageError.value = true;
+        const brandSlug = product.value.brand.toLowerCase().replace(/\s+/g, '-');
+        e.target.src = `/assets/brands/${brandSlug}.jpg`;
+        e.target.onerror = () => {
+            e.target.src = '/assets/brands/default.png';
+        };
+    }
+};
+
+const handleTypeImageError = (e) => {
+    if (!typeImageError.value) {
+        typeImageError.value = true;
+        e.target.src = `/assets/types/${product.value.product_type}.jpg`;
+        e.target.onerror = () => {
+            e.target.src = '/assets/types/default.png';
+        };
+    }
 };
 
 const handleAddToCart = () => {
@@ -258,6 +303,18 @@ onMounted(() => {
     display: flex;
     flex-direction: column;
     gap: 20px;
+}
+
+.brand-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.brand-logo {
+    width: 40px;
+    height: 40px;
+    object-fit: contain;
 }
 
 .brand {
@@ -392,6 +449,18 @@ onMounted(() => {
 .detail-item strong {
     color: #333;
     margin-right: 5px;
+}
+
+.detail-item-with-icon {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.type-icon-small {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
 }
 
 .tags {

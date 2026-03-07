@@ -7,23 +7,19 @@
         <div v-if="productStore.loading" class="loading">Chargement des catégories...</div>
         <div v-else-if="productStore.error" class="error">{{ productStore.error }}</div>
         <div v-else class="categories-grid">
-            <RouterLink 
+            <TypeCard 
                 v-for="type in productStore.types" 
                 :key="type"
-                :to="`/type/${type}`"
-                class="category-card"
-            >
-                <div class="category-name">{{ formatProductType(type) }}</div>
-            </RouterLink>
+                :type="type"
+            />
         </div>
     </div>
 </template>
 
 <script setup>
 import { onMounted } from 'vue';
-import { RouterLink } from 'vue-router';
 import { useProductStore } from '../stores/products';
-import { formatProductType } from '../utils/formatters';
+import TypeCard from '../Components/TypeCard.vue';
 
 const productStore = useProductStore();
 
@@ -74,39 +70,6 @@ onMounted(() => {
     gap: 24px;
 }
 
-.category-card {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 32px;
-    background: #ffffff;
-    border: 1px solid #f0f0f0;
-    border-radius: 8px;
-    text-decoration: none;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    min-height: 120px;
-    cursor: pointer;
-}
-
-.category-card:hover {
-    border-color: #d4364f;
-    box-shadow: 0 12px 30px rgba(212, 54, 79, 0.15);
-    transform: translateY(-4px);
-}
-
-.category-name {
-    font-size: 0.95rem;
-    font-weight: 600;
-    color: #1a1a1a;
-    text-align: center;
-    letter-spacing: 0.2px;
-    transition: color 0.3s ease;
-}
-
-.category-card:hover .category-name {
-    color: #d4364f;
-}
-
 @media (max-width: 768px) {
     .container {
         padding: 24px 20px;
@@ -119,15 +82,6 @@ onMounted(() => {
     .categories-grid {
         grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
         gap: 16px;
-    }
-
-    .category-card {
-        padding: 24px 16px;
-        min-height: 100px;
-    }
-
-    .category-name {
-        font-size: 0.85rem;
     }
 }
 </style>
