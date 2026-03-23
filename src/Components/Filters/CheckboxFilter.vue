@@ -43,11 +43,9 @@ const toggleExpanded = () => {
 };
 
 const formatOption = (option) => {
-    // Si l'option contient un underscore, on utilise le formatage
     if (option && option.includes('_')) {
         return formatProductType(option);
     }
-    // Sinon on retourne l'option telle quelle
     return option;
 };
 </script>

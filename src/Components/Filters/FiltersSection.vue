@@ -5,7 +5,6 @@
             @update:model-value="updatePriceRange"
             :available-range="availablePriceRange"
         />
-
         <CheckboxFilter
             v-for="filter in filterConfigs"
             :key="filter.key"
@@ -13,7 +12,6 @@
             v-model="selectedFilters[filter.key]"
             :available-options="getAvailableOptions(filter.key)"
         />
-
         <button class="reset-btn" @click="resetAllFilters">Réinitialiser les filtres</button>
     </div>
 </template>

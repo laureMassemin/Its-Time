@@ -10,23 +10,23 @@
             <div class="product-info flex-column flex-gap-lg">
                 <div class="brand-text">{{ product.brand }}</div>
                 
-                <h1 style="font-size: 2rem; font-weight: 600; line-height: 1.3; margin: 0; color: var(--text-secondary);">{{ product.name }}</h1>
+                <h1 class="h1">{{ product.name }}</h1>
                 <div class="flex flex-gap-md">
                     <div class="price-text-large">{{ product.price }} {{ product.price_sign }}</div>
-                    <div class="text-muted" style="font-size: 0.9rem;" v-if="product.currency">{{ product.currency }}</div>
+                    <div class="text-muted" v-if="product.currency">{{ product.currency }}</div>
                 </div>
                 
-                <div class="text-muted" style="font-size: 0.95rem; padding: 8px 0;" v-if="product.rating">
+                <div class="text-muted" v-if="product.rating">
                     <strong>Note:</strong> {{ product.rating }} / 5
                 </div>
                 
                 <div class="mt-lg" v-if="product.description">
-                    <h2 class="subsection-title">Description</h2>
-                    <p class="text-muted" style="font-size: 0.95rem; line-height: 1.6;">{{ product.description }}</p>
+                    <h2 class="h3">Description</h2>
+                    <p class="text-muted">{{ product.description }}</p>
                 </div>
                 
                 <div class="mt-lg" v-if="product.product_colors && product.product_colors.length > 0">
-                    <h2 class="subsection-title">Couleurs disponibles ({{ product.product_colors.length }})</h2>
+                    <h2 class="h3">Couleurs disponibles ({{ product.product_colors.length }})</h2>
                     <div class="colors-grid">
                         <div 
                             v-for="color in product.product_colors" 
@@ -41,17 +41,17 @@
                 </div>
                 
                 <div class="flex-column flex-gap-sm">
-                    <div class="flex flex-gap-md text-muted" style="font-size: 0.9rem;" v-if="product.product_type">
+                    <div class="flex flex-gap-md text-muted" v-if="product.product_type">
                         <img 
                             :src="typeImage" 
                             :alt="formatProductType(product.product_type)"
                             @error="handleTypeImageError"
                             class="img-icon-sm"
                         />
-                        <span><strong style="color: var(--text-secondary);">Type:</strong> {{ formatProductType(product.product_type) }}</span>
+                        <span><strong>Type:</strong> {{ formatProductType(product.product_type) }}</span>
                     </div>
-                    <div class="text-muted" style="font-size: 0.9rem;" v-if="product.id">
-                        <strong style="color: var(--text-secondary);">ID:</strong> {{ product.id }}
+                    <div class="text-muted" v-if="product.id">
+                        <strong>ID:</strong> {{ product.id }}
                     </div>
                 </div>
                 
@@ -60,10 +60,10 @@
                 </div>
                 
                 <div class="flex-column flex-gap-md mt-lg">
-                    <a v-if="product.product_link" :href="product.product_link" target="_blank" class="link-underline">
+                    <a v-if="product.product_link" :href="product.product_link" target="_blank" class="link-primary">
                         Voir sur le site officiel
                     </a>
-                    <a v-if="product.website_link" :href="product.website_link" target="_blank" class="link-underline">
+                    <a v-if="product.website_link" :href="product.website_link" target="_blank" class="link-primary">
                         Site de la marque
                     </a>
                 </div>
@@ -93,8 +93,8 @@
                 </div>
                 
                 <div class="border-top pt-lg mt-xl flex-column flex-gap-sm">
-                    <div class="text-light" style="font-size: 0.75rem;" v-if="product.created_at">Ajouté le {{ formatDate(product.created_at) }}</div>
-                    <div class="text-light" style="font-size: 0.75rem;" v-if="product.updated_at">Mis à jour le {{ formatDate(product.updated_at) }}</div>
+                    <div class="caption" v-if="product.created_at">Ajouté le {{ formatDate(product.created_at) }}</div>
+                    <div class="caption" v-if="product.updated_at">Mis à jour le {{ formatDate(product.updated_at) }}</div>
                 </div>
             </div>
         </div>

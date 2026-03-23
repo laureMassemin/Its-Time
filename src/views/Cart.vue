@@ -3,7 +3,7 @@
         <h1 class="page-title mb-xl">Mon Panier</h1>
         
         <div v-if="cartStore.items.length === 0" class="empty-state">
-            <p style="font-size: 1.2rem; margin-bottom: 20px;">Votre panier est vide</p>
+            <p class="h3">Votre panier est vide</p>
             <RouterLink to="/produits" class="btn btn-primary">Continuer les achats</RouterLink>
         </div>
         
@@ -14,13 +14,13 @@
                     
                     <div class="item-details">
                         <div class="brand-text">{{ item.brand }}</div>
-                        <div class="product-name" style="font-size: 1rem;">{{ item.name }}</div>
+                        <div class="product-name">{{ item.name }}</div>
                         
-                        <div v-if="item.selectedColor" class="flex flex-gap-sm" style="font-size: 0.85rem; color: var(--text-muted);">
+                        <div v-if="item.selectedColor" class="flex flex-gap-sm text-muted text-sm">
                             <span>Couleur:</span>
                             <div class="flex flex-gap-sm">
                                 <div class="color-swatch-sm" :style="{ backgroundColor: item.selectedColor.hex_value }"></div>
-                                <span style="font-size: 0.8rem;">{{ item.selectedColor.colour_name }}</span>
+                                <span class="caption">{{ item.selectedColor.colour_name }}</span>
                             </div>
                         </div>
                         
@@ -44,7 +44,7 @@
             </div>
             
             <div class="cart-summary card card-unified card-padding">
-                <h2 class="subsection-title">Résumé</h2>
+                <h2 class="h3">Résumé</h2>
                 
                 <div class="summary-line">
                     <span>Articles ({{ cartStore.totalItems }})</span>
@@ -56,8 +56,8 @@
                     <span>{{ cartStore.totalPrice.toFixed(2) }} $</span>
                 </div>
                 
-                <button class="btn btn-primary" style="width: 100%; margin-top: 20px;">Passer la commande</button>
-                <button @click="cartStore.clearCart()" class="btn btn-outline btn-sm" style="width: 100%; margin-top: 10px;">Vider le panier</button>
+                <button class="btn btn-primary w-full mt-lg">Passer la commande</button>
+                <button @click="cartStore.clearCart()" class="btn btn-outline btn-sm w-full mt-md">Vider le panier</button>
             </div>
         </div>
     </div>

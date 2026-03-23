@@ -43,7 +43,6 @@ const brandImage = computed(() => {
     if (imageError.value) {
         return '/assets/brands/default.png';
     }
-    // Convertir le nom de la marque en minuscules et remplacer les espaces
     const brandSlug = props.brand.toLowerCase().replace(/\s+/g, '-');
     return `/assets/brands/${brandSlug}.png`;
 });
@@ -51,11 +50,9 @@ const brandImage = computed(() => {
 const handleImageError = (e) => {
     if (!imageError.value) {
         imageError.value = true;
-        // Essayer avec .jpg
         const brandSlug = props.brand.toLowerCase().replace(/\s+/g, '-');
         e.target.src = `/assets/brands/${brandSlug}.jpg`;
         e.target.onerror = () => {
-            // Si .jpg échoue aussi, utiliser l'image par défaut
             e.target.src = '/assets/brands/default.png';
         };
     }
