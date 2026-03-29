@@ -249,9 +249,8 @@ onMounted(() => {
     getProduct();
 });
 
-// Watch for route changes to reload product when switching between details pages
 watch(() => route.params.id, () => {
-    selectedColor.value = null; // Reset color selection
+    selectedColor.value = null; 
     getProduct();
 });
 </script>

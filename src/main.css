@@ -559,16 +559,12 @@ h4,
 }
 
 .hero-section {
-  background-image:
-  linear-gradient(rgba(0,0,0,0.35), rgba(0,0,0,0.35)),
-  url('/assets/pexels-clickerhappy-1571585.jpg');
+  background-color: var(--color-error);
   color: var(--color-white);
 }
 
 .cta-section {
-  background-image:
-  linear-gradient(rgba(0,0,0,0.35), rgba(0,0,0,0.35)),
-  url('/assets/pexels-marcelo-moreira-988124-1926620.jpg');
+  background-color: var(--primary-gradient-end);
   color: var(--color-white);
 }
 

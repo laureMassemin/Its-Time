@@ -42,17 +42,14 @@ const typeImage = computed(() => {
     if (imageError.value) {
         return '/assets/types/default.png';
     }
-    // Essayer .png d'abord, .jpg en cas d'erreur
     return `/assets/types/${props.type}.png`;
 });
 
 const handleImageError = (e) => {
     if (!imageError.value) {
         imageError.value = true;
-        // Essayer avec .jpg
         e.target.src = `/assets/types/${props.type}.jpg`;
         e.target.onerror = () => {
-            // Si .jpg échoue aussi, utiliser l'image par défaut
             e.target.src = '/assets/types/default.png';
         };
     }

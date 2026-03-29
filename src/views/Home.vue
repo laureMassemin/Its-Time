@@ -97,7 +97,6 @@ onMounted(() => {
 const featuredTypes = computed(() => {
     const priorityTypes = ['lipstick', 'foundation', 'mascara', 'eyeliner', 'blush', 'nail_polish'];
     
-    // Filtrer pour ne retourner que les types qui existent dans les données
     return priorityTypes.filter(type => 
         productStore.products.some(p => p.product_type === type)
     ).slice(0, 6);

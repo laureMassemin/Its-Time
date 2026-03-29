@@ -71,7 +71,6 @@ const router = createRouter({
     routes
 });
 
-// Scroll to top on route change
 router.afterEach(() => {
     window.scrollTo(0, 0);
 });
