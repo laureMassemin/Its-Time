@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import api from '../../fichier';
+import api from '../API/fichier.js';
 
 export const useProductStore = defineStore('products', () => {
     const products = ref([]);

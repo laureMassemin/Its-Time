@@ -1,136 +1,97 @@
-# Its-Time 
+# Its-Time
 
-Une application e-commerce développée avec Vue 3.
+Application e-commerce developpee avec Vue.js pour consulter des produits cosmetiques, filtrer le catalogue, voir les details d'un produit, et gerer un panier/favoris.
 
-## ✨ Fonctionnalités
+## Objectif du projet
 
-### Interface Utilisateur
-- **Mega Menu** - Navigation avec dropdown full-width
-- **Design Responsive** - Optimisé pour mobile, tablette et desktop
-- **Thème** - Couleur signature #d4364f, typographie Montserrat
+L'objectif de ce projet est de concevoir une application front-end en Vue 3 avec:
 
-### Filtres Avancés
-- **Filtre Prix** - Range slider avec inputs min/max
-- **Filtres Marques** - Checkboxes dynamiques avec toutes les marques
-- **Filtres Types** - Filtrage par catégories de produits
-- **Filtres Tags** - Tags personnalisés pour affiner la recherche
+- une navigation entre plusieurs pages
+- des listes produits filtrees et paginees
+- une interface responsive (desktop, tablette, mobile)
 
-### Fonctionnalités
-- **Panier** - Ajout/suppression de produits, gestion des quantités
-- **Favoris** - Sauvegarde des produits préférés
-- **Pages Produits** - Détails complets, sélection de couleurs, variations
-- **Pagination** - Navigation fluide dans les catalogues (30 produits/page)
+## Fonctionnalites principales
 
-### Performance
-- **Cache Intelligent** - Pinia store avec cache de 30 minutes
-- **Chargement Optimisé** - 1 seul appel API au démarrage
-- **Navigation Instantanée** - Filtrage côté client ultra-rapide
+- Mega menu pour marques et categories
+- Liste de produits avec pagination
+- Recherche sur les pages liste produits
+- Filtres avances: prix, marques, types, tags
+- Page detail produit avec recommandations
+- Panier: ajout, suppression, quantite
+- Favoris: ajout/retrait depuis les cartes produit
+- Scroll en haut a chaque changement de page
+- Etats de chargement sur les blocs dependants de l'API
 
-## Architecture
+## Organisation du travail
 
-### Structure des Composants
-```
-src/
-├── Components/
-│   ├── Filters/
-│   │   ├── PriceFilter.vue      # Filtre prix avec range slider
-│   │   ├── CheckboxFilter.vue   # Filtre checkbox réutilisable
-│   │   └── FiltersSection.vue   # Conteneur des filtres
-│   ├── Navbar.vue               # Navigation avec mega menu
-│   ├── ProductCard.vue          # Carte produit
-│   ├── ProductList.vue          # Liste de produits orchestrateur
-│   └── ProductGrid.vue          # Grille + pagination
-├── stores/
-│   ├── products.js              # Cache produits (30 min)
-│   ├── cart.js                  # Gestion panier
-│   └── favorites.js             # Gestion favoris
-├── views/
-│   ├── ProductDetails.vue       # Page détail produit
-│   ├── Cart.vue                 # Page panier
-│   ├── Favorites.vue            # Page favoris
-│   ├── AllBrands.vue            # Toutes les marques
-│   └── AllCategories.vue        # Toutes les catégories
-└── router.js                    # Configuration des routes
-```
+Projet solo, organise en etapes:
 
-### Technologies
+1. Initialisation du projet Vue 3 avec Vite et mise en place de la base de l'application.
+2. Integration de l'API produits et creation des premiers composants (carte produit + liste produits).
+3. Mise en place des filtres (marque, type, tags), puis ajout du filtre prix dynamique.
+4. Creation de la page detail produit, puis ajout du panier et des favoris avec Pinia.
+5. Ajout des pages `AllBrands` et `AllCategories` + organisation des composants.
+6. Ajout des recommandations produits et des images de marques/types.
+7. Refonte visuelle globale avec `main.css` et amelioration du responsive.
+8. Ajout de la barre de recherche sur les pages liste.
+9. Nettoyage du code, correction des details UX (scroll top, chargements, styles) et finalisation du README.
 
-- **Vue 3** - Composition API, `<script setup>`
-- **Vue Router** - Navigation SPA avec routes dynamiques
-- **Pinia** - State management moderne
-- **Vite** - Build tool ultra-rapide
-- **Montserrat** - Police Google Fonts
+## Difficultes rencontrees et solutions apportees
 
-## Démarrage 
+- Difficulte principale: temps de chargement de l'API et risque de requetes repetitives.
+- Solution apportee: mise en place d'un store Pinia (`products.js`) pour centraliser les donnees produits, avec cache temporaire afin de limiter les appels API inutiles et accelerer l'affichage.
 
-### Prérequis
-- Node.js 16+ 
-- npm ou yarn
+## API utilisee
+
+- API: Makeup API
+- Base URL: `https://makeup-api.herokuapp.com`
+- Fichier de configuration Axios: `fichier.js`
+
+### Endpoint principal utilise
+
+- `GET /api/v1/products.json`
+
+URL complete:
+
+`https://makeup-api.herokuapp.com/api/v1/products.json`
+
+## Routes de l'application
+
+| Route | Nom | Description |
+|-------|-----|-------------|
+| `/` | `Home` | Page d'accueil avec categories populaires, marques vedettes et produits recents. |
+| `/produits` | `AllProducts` | Catalogue complet des produits avec recherche, filtres et pagination. |
+| `/marques` | `AllBrands` | Liste de toutes les marques disponibles. |
+| `/categories` | `AllCategories` | Liste de tous les types/categories de produits. |
+| `/marque/:brand` | `Brand` | Catalogue filtre par marque. |
+| `/type/:type` | `Type` | Catalogue filtre par type de produit. |
+| `/produit/:id` | `ProductDetails` | Fiche detaillee d'un produit (infos, couleurs, recommandations). |
+| `/panier` | `Cart` | Gestion du panier (quantites, suppression, total). |
+| `/favoris` | `Favorites` | Liste des produits favoris. |
+
+## Installation et lancement
+
+### Prerequis
+
+- Node.js 16+
+- npm
 
 ### Installation
 
-```sh
+```bash
 npm install
 ```
 
-### Développement
+### Lancement en developpement
 
-```sh
+```bash
 npm run dev
 ```
 
-L'application sera accessible sur `http://localhost:5173`
+Application accessible sur `http://localhost:5173`.
 
-### Build Production
+### Build de production
 
-```sh
+```bash
 npm run build
 ```
-
-## 📱 Routes
-
-| Route | Description |
-|-------|-------------|
-| `/` | Page d'accueil avec tous les produits |
-| `/marques` | Grille de toutes les marques |
-| `/categories` | Grille de toutes les catégories |
-| `/marque/:brand` | Produits filtrés par marque |
-| `/type/:type` | Produits filtrés par type |
-| `/produit/:id` | Détails d'un produit |
-| `/panier` | Panier d'achats |
-| `/favoris` | Produits favoris |
-
-## 🎨 Thème & Design
-
-### Couleurs
-- **Primary:** #d4364f 
-- **Text:** #1a1a1a, #333, #666
-- **Border:** #ddd
-
-### Typographie
-- **Font Family:** Montserrat, sans-serif
-- **Weights:** 400, 600, 700
-
-## 🔧 Configuration
-
-### IDE Recommandé
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar)
-
-### Extensions Navigateur
-- **Chrome/Edge:** [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)
-- **Firefox:** [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-
-## 📦 Dépendances Principales
-
-```json
-{
-  "vue": "^3.x",
-  "vue-router": "^4.x",
-  "pinia": "^2.x",
-  "axios": "^1.x"
-}
-```
-
-## 📝 License
-
-[MIT](LICENSE)

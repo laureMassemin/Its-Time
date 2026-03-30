@@ -6,3 +6,5 @@ const api = axios.create({
 
 
 export default api;
+
+// Informations sur l'API : https://makeup-api.herokuapp.com/
